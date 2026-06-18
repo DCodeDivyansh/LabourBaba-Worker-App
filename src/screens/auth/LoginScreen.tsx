@@ -1,13 +1,30 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import React from 'react';
+import {View, StyleSheet} from 'react-native';
 
-export default function LoginScreen() {
+import AuthHeader from '../../components/AuthHeader';
+import LoginForm from '../../components/LoginForm';
+import FooterLink from '../../components/FooterLink';
+import LanguageToggle from '../../components/LanguageToggle';
+
+const LoginScreen = () => {
   return (
-    <SafeAreaView>
-      <Text>LoginScreen</Text>
-    </SafeAreaView>
-  )
-}
+    <View>
+      <LanguageToggle />
+      <View>
+        <AuthHeader />
+        <LoginForm />
+      </View>
+      <FooterLink />
+    </View>
+  );
+};
 
-const styles = StyleSheet.create({})
+export default LoginScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F4F1',
+    justifyContent: 'space-between',
+  },
+});
