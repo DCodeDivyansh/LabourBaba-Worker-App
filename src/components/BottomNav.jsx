@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 
 import HomeActive from '../../assets/HomeIcon.svg';
 import Home from '../../assets/HomeIcon2.svg';
@@ -13,7 +18,7 @@ import Alerts from '../../assets/NotificationIcon2.svg';
 import ProfileActive from '../../assets/ProfileIcon.svg';
 import Profile from '../../assets/ProfileIcon2.svg';
 
-const BottomNavBar = () => {
+const BottomNav = () => {
   const [activeTab, setActiveTab] = useState('Home');
 
   const tabs = [
@@ -52,11 +57,12 @@ const BottomNavBar = () => {
         return (
           <TouchableOpacity
             key={tab.name}
-            onPress={() => setActiveTab(tab.name)}
+            activeOpacity={0.8}
             style={[
               styles.tab,
               isActive && styles.activeTab,
             ]}
+            onPress={() => setActiveTab(tab.name)}
           >
             <View style={styles.iconContainer}>
               <Icon width={22} height={22} />
@@ -81,41 +87,37 @@ const BottomNavBar = () => {
   );
 };
 
-export default BottomNavBar;
+export default BottomNav;
 
 const styles = StyleSheet.create({
   container: {
-    top: 100,
     height: 80,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
 
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
 
     paddingHorizontal: 16,
 
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#EFEFEF',
+
+    elevation: 10,
   },
 
   tab: {
     flex: 1,
     height: 54,
-    justifyContent: 'center',
+
     alignItems: 'center',
+    justifyContent: 'center',
+
     borderRadius: 28,
   },
 
   activeTab: {
     backgroundColor: '#FF6200',
-    flexDirection: 'Column',
-    paddingHorizontal: 16,
   },
 
   iconContainer: {
@@ -124,9 +126,9 @@ const styles = StyleSheet.create({
 
   label: {
     marginTop: 4,
-    fontSize: 13,
-    color: '#6B4E3D',
+    fontSize: 12,
     fontWeight: '500',
+    color: '#6B4E3D',
   },
 
   activeLabel: {
@@ -138,9 +140,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -2,
     right: -4,
+
     width: 8,
     height: 8,
     borderRadius: 4,
+
     backgroundColor: '#C62828',
   },
 });
