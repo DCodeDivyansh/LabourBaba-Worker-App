@@ -6,6 +6,7 @@ import {
     StyleSheet,
 } from 'react-native';
 import BackIcon from '../../assets/BackIcon.svg';
+import Share from '../../assets/share.svg'
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 // import { useNavigation } from '@react-navigation/native';
@@ -21,14 +22,21 @@ const TopAppBar = ({
             {showBackButton && (
                 <TouchableOpacity
                 //   onPress={() => navigation.goBack()}
+                style={styles.backButton}
                 >
-                    <BackIcon style={styles.backButton} />
+                    <BackIcon width={24} height={24} />
                 </TouchableOpacity>
             )}
 
             <Text style={styles.title}>
                 {title}
             </Text>
+
+            <View style={styles.spacer} />
+
+            <TouchableOpacity style={styles.shareButton}>
+                <Share width={44} height={44} />
+            </TouchableOpacity>
         </View>
     );
 };
@@ -44,6 +52,7 @@ const styles = StyleSheet.create({
 
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
 
         paddingHorizontal: 16,
 
@@ -59,14 +68,25 @@ const styles = StyleSheet.create({
 
     backButton: {
         padding: 4,
-        height: 24,
-        width: 24,
+        height: 32,
+        width: 32,
+    },
+    shareButton: {
+        padding: 4,
+        height: 32,
+        width: 32,
+        left:-10,
+        top:-8,
+    },
+    spacer: {
+        width: 32,
     },
 
     title: {
-        marginLeft: 30,
+        flex: 1,
         fontSize: 24,
         fontWeight: '700',
         color: '#FF5A00',
+        textAlign: 'center',
     },
 });
