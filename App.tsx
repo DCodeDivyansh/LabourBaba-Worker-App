@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import LoginScreen from './src/screens/auth/LoginScreen';
@@ -9,6 +9,8 @@ import Help from './src/screens/Help';
 import Review from './src/screens/Review';
 import WorkerDashboardScreen from './src/screens/jobs/WorkerDashboardScreen '
 import JobsHistory from './src/screens/jobs/JobsHistory'
+import AlertScreen from './src/screens/jobs/AlertsScreen'
+import ProfileScreen from './src/screens/jobs/ProfileScreen'
 
 export default function App() {
   useEffect(() => {
@@ -20,13 +22,15 @@ export default function App() {
   return (
     <View style={{flex:1}}> 
     <View style={styles.container}>
-<!--       <JobsHistory/> -->
+      <ProfileScreen />
+      {/* <AlertScreen /> */}
       {/* <WorkerDashboardScreen /> */}
       {/* <CreateProfileScreen /> */}
       {/* <OtpVerificationScreen /> */}
       {/* <LoginScreen /> */}
       {/* <Help /> */}
-      <Review />
+      {/* <Review /> */}
+    </View>
     </View>
   );
 }
