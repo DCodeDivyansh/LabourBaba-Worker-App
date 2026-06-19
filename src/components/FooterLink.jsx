@@ -1,14 +1,16 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-const FooterLink = () => {
+const FooterLink = ({CreateProfile}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.normalText}>
         New to LabourBaba?{' '}
       </Text>
 
-      <TouchableOpacity>
+      <TouchableOpacity
+      onPress={CreateProfile}
+      >
         <Text style={styles.linkText}>
           Create Account
         </Text>
@@ -24,8 +26,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
-    top: 30,
+    marginBottom: 120,
+    top: 0,
 
   },
 

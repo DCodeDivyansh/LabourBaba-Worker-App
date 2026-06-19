@@ -1,22 +1,41 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, View } from 'react-native';
+import React from 'react';
+
 import TopAppBar from '../../components/TopAppBar';
-import AuthHeader from '../../components/AuthHeader';
 import OtpVerificationContent from '../../components/OtpVerificationContent';
 
+export default function OtpVerificationScreen({
+  navigation,
+}) {
+  const handleVerify = otp => {
+    console.log('OTP:', otp);
 
-export default function OtpVerificationScreen() {
+    // Verify OTP here
+
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: 'Dashboard',
+        },
+      ],
+    });
+  };
+
   return (
-    <View>
+    <View style={styles.container}>
       <TopAppBar title="Verification" />
+
       <OtpVerificationContent
         phoneNumber="+91 9876543210"
-        onVerify={(otp) => {
-          console.log('OTP:', otp);
-        }}
+        onVerify={handleVerify}
       />
     </View>
-  )
+  );
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

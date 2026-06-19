@@ -19,7 +19,7 @@ export default function WorkerDashboardScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <WelcomeHeader />
+        <WelcomeHeader name="" imageUrl="" />
         <LocationLine />
         <AvailabilityCard />
         <ActiveJobCard />

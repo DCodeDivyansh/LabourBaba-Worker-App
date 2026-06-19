@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,15 @@ import {
   Image,
 } from 'react-native';
 
-const LoginForm = () => {
+
+interface LoginFormProps {
+  onSendOtp: () => void;
+}
+
+const LoginForm = ({
+  onSendOtp,
+}: LoginFormProps) => {
+
   const [mobile, setMobile] = useState('');
 
   return (
@@ -34,7 +42,10 @@ const LoginForm = () => {
       </View>
 
       {/* OTP Button */}
-      <TouchableOpacity style={styles.otpButton}>
+      <TouchableOpacity
+        style={styles.otpButton}
+        onPress={onSendOtp}
+      >
         <Text style={styles.otpText}>Send OTP</Text>
       </TouchableOpacity>
 

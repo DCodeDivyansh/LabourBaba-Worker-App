@@ -6,11 +6,17 @@ import LocationCard from '../../components/LocationCard'
 import TradeExperienceCard from '../../components/TradeExperienceCard'
 import VerifyIdentityCard from '../../components/VerifyIdentityCard'
 import AnimatedButton from '../../components/AnimatedButton'
-import Icon from 'react-native-vector-icons/FontAwesome';
 
-export default function CreateProfileScreen() {
+export default function CreateProfileScreen({ navigation }: any) {
     const handleSubmit = () => {
-    console.log('Complete Registration');
+        navigation.reset({
+            index: 0,
+            routes: [
+                {
+                    name: 'Dashboard',
+                },
+            ],
+        });
     };
     return (
         <View>
@@ -28,14 +34,14 @@ export default function CreateProfileScreen() {
                 <PersonalDetailsCard />
                 <LocationCard />
                 <TradeExperienceCard />
-            <View style={{ marginTop: 24, marginBottom: 30, justifyContent: 'center', alignItems: 'center' }}>
-                <AnimatedButton
-                    title="Complete Registration"
-                    width="90%"
-                    height={56}
-                    onPress={handleSubmit}
-                />
-            </View>
+                <View style={{ marginTop: 24, marginBottom: 30, justifyContent: 'center', alignItems: 'center' }}>
+                    <AnimatedButton
+                        title="Complete Registration"
+                        width="90%"
+                        height={56}
+                        onPress={handleSubmit}
+                    />
+                </View>
             </ScrollView>
         </View>
     )

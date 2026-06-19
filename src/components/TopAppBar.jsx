@@ -9,19 +9,19 @@ import BackIcon from '../../assets/BackIcon.svg';
 import Share from '../../assets/share.svg'
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
-// import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 const TopAppBar = ({
     title,
     showBackButton = true,
 }) => {
-    //   const navigation = useNavigation();
+      const navigation = useNavigation();
 
     return (
         <View style={styles.container}>
             {showBackButton && (
                 <TouchableOpacity
-                //   onPress={() => navigation.goBack()}
+                  onPress={() => navigation.goBack()}
                 style={styles.backButton}
                 >
                     <BackIcon width={24} height={24} />
@@ -34,9 +34,9 @@ const TopAppBar = ({
 
             <View style={styles.spacer} />
 
-            <TouchableOpacity style={styles.shareButton}>
+            {/* <TouchableOpacity style={styles.shareButton}>
                 <Share width={44} height={44} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </View>
     );
 };
