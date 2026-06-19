@@ -5,6 +5,8 @@ import BootSplash from 'react-native-bootsplash';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import OtpVerificationScreen from './src/screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from './src/screens/auth/CreateProfileScreen';
+import Help from './src/screens/Help';
+import Review from './src/screens/Review';
 import WorkerDashboardScreen from './src/screens/jobs/WorkerDashboardScreen '
 import JobsHistory from './src/screens/jobs/JobsHistory'
 
@@ -16,12 +18,15 @@ export default function App() {
   }, []);
 
   return (
+    <View style={{flex:1}}> 
     <View style={styles.container}>
-      <JobsHistory/>
+<!--       <JobsHistory/> -->
       {/* <WorkerDashboardScreen /> */}
       {/* <CreateProfileScreen /> */}
       {/* <OtpVerificationScreen /> */}
       {/* <LoginScreen /> */}
+      {/* <Help /> */}
+      <Review />
     </View>
   );
 }
