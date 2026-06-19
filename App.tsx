@@ -6,6 +6,7 @@ import LoginScreen from './src/screens/auth/LoginScreen';
 import OtpVerificationScreen from './src/screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from './src/screens/auth/CreateProfileScreen';
 import WorkerDashboardScreen from './src/screens/jobs/WorkerDashboardScreen '
+import JobsHistory from './src/screens/jobs/JobsHistory'
 
 export default function App() {
   useEffect(() => {
@@ -16,7 +17,8 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <WorkerDashboardScreen />
+      <JobsHistory/>
+      {/* <WorkerDashboardScreen /> */}
       {/* <CreateProfileScreen /> */}
       {/* <OtpVerificationScreen /> */}
       {/* <LoginScreen /> */}
