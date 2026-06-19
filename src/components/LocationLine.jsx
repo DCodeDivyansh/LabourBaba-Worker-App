@@ -20,11 +20,12 @@ export default LocationBanner;
 
 const styles = StyleSheet.create({
   container: {
-    marginRight:10,
-    backgroundColor: '#F5F5F5',
+    margin:15,
+    backgroundColor: '#ffffff',
     borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    padding:10,
+    // paddingVertical: 12,
+    // paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
   },

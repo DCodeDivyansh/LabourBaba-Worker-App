@@ -47,7 +47,7 @@ export default SafetyBanner;
 const styles = StyleSheet.create({
   container: {
     height: 90,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
 
     flexDirection: 'row',
@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
 
     marginHorizontal: 16,
+    marginVertical:10,
 
     shadowColor: '#000',
     shadowOffset: {
