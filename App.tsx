@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import OtpVerificationScreen from './src/screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from './src/screens/auth/CreateProfileScreen';
+import WorkerDashboardScreen from './src/screens/jobs/WorkerDashboardScreen '
 
 export default function App() {
   useEffect(() => {
@@ -14,9 +16,12 @@ export default function App() {
 
   return (
     <View>
-      <CreateProfileScreen />
+      <WorkerDashboardScreen />
+      {/* <CreateProfileScreen /> */}
       {/* <OtpVerificationScreen /> */}
       {/* <LoginScreen /> */}
     </View>
   );
 }
+
+const styles = StyleSheet.create({});
