@@ -4,6 +4,8 @@ import BootSplash from 'react-native-bootsplash';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import OtpVerificationScreen from './src/screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from './src/screens/auth/CreateProfileScreen';
+import Help from './src/screens/Help';
+import Review from './src/screens/Review';
 
 export default function App() {
   useEffect(() => {
@@ -13,10 +15,12 @@ export default function App() {
   }, []);
 
   return (
-    <View>
-      <CreateProfileScreen />
+    <View style={{flex:1}}> 
+      {/* <CreateProfileScreen /> */}
       {/* <OtpVerificationScreen /> */}
       {/* <LoginScreen /> */}
+      {/* <Help /> */}
+      <Review />
     </View>
   );
 }
