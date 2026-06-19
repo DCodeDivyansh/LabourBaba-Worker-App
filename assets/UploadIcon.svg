@@ -1,0 +1,28 @@
+<svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="6" y="2" width="30" height="30" rx="15" fill="#FF5404"/>
+<rect x="6" y="2" width="30" height="30" rx="15" stroke="#F8F9FA" stroke-width="2"/>
+<g filter="url(#filter0_dd_2217_55)">
+<rect x="5" y="1" width="32" height="32" rx="16" fill="white" fill-opacity="0.01" shape-rendering="crispEdges"/>
+</g>
+<path d="M20.3333 19.6667V14.2334L18.6 15.9667L17.6666 15L21 11.6667L24.3333 15L23.4 15.9667L21.6666 14.2334V19.6667H20.3333ZM17 22.3334C16.6333 22.3334 16.3194 22.2028 16.0583 21.9417C15.7972 21.6806 15.6666 21.3667 15.6666 21V19H17V21H25V19H26.3333V21C26.3333 21.3667 26.2027 21.6806 25.9416 21.9417C25.6805 22.2028 25.3666 22.3334 25 22.3334H17Z" fill="white"/>
+<defs>
+<filter id="filter0_dd_2217_55" x="0" y="0" width="42" height="42" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feMorphology radius="2" operator="erode" in="SourceAlpha" result="effect1_dropShadow_2217_55"/>
+<feOffset dy="2"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2217_55"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feMorphology radius="1" operator="erode" in="SourceAlpha" result="effect2_dropShadow_2217_55"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="3"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
+<feBlend mode="normal" in2="effect1_dropShadow_2217_55" result="effect2_dropShadow_2217_55"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_2217_55" result="shape"/>
+</filter>
+</defs>
+</svg>

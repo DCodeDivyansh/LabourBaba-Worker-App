@@ -7,15 +7,15 @@ import {
   StyleSheet,
     Image,
 } from 'react-native';
+import PersonalDetailsIcon from '../../assets/PersonalDetailsIcon.svg';
+import CameraIcon from '../../assets/Camera.svg';
+import UploadIcon from '../../assets/UploadIcon.svg';
 
 const PersonalDetailsCard = () => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Image
-                      source={require('../../assets/PersonalDetails.png')}
-                      style={styles.HeaderIcon}
-            />
+        <PersonalDetailsIcon style={styles.headerIcon} />
         <Text style={styles.headerText}>
           Personal Details
         </Text>
@@ -23,14 +23,11 @@ const PersonalDetailsCard = () => {
 
       <View style={styles.photoSection}>
         <View style={styles.photoCircle}>
-          <Image
-                      source={require('../../assets/Camera.png')}
-                      style={styles.camera}
-            />
+          <CameraIcon style={styles.camera} />
         </View>
 
         <TouchableOpacity style={styles.uploadBtn}>
-          <Text style={styles.uploadText}>↑</Text>
+          <UploadIcon />
         </TouchableOpacity>
 
         <Text style={styles.uploadLabel}>
@@ -136,20 +133,11 @@ const styles = StyleSheet.create({
   },
 
   uploadBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#FF5A00',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
     right: 105,
     bottom: 20,
-  },
-
-  uploadText: {
-    color: '#FFF',
-    fontWeight: '700',
   },
 
   uploadLabel: {

@@ -6,7 +6,6 @@ import OtpVerificationScreen from './src/screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from './src/screens/auth/CreateProfileScreen';
 import LocationCard from './src/components/LocationCard';
 import TopAppBar from './src/components/TopAppBar';
-import Help from './src/screens/Help';
 
 export default function App() {
   useEffect(() => {
@@ -17,11 +16,10 @@ export default function App() {
 
   return (
     <View>
-      {/* <TopAppBar title="Location Base" /> */}
-      {/* {/* <LocationCard /> */}
-      {/* <OtpVerificationScreen />
-      <LoginScreen />  */}
-      <Help />
+      <TopAppBar title="Location Base" />
+      {/* <LocationCard /> */}
+      {/* <OtpVerificationScreen /> */}
+      {/* <LoginScreen /> */}
     </View>
   );
 }
