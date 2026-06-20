@@ -41,7 +41,7 @@ const jobsData = [
 ];
 
 const MyJobsList = () => {
-  const [activeTab, setActiveTab] = useState('Upcoming');
+  const [activeTab, setActiveTab] = useState('All History');
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>

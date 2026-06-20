@@ -9,8 +9,13 @@ import {
 
 import LocationIcon from '../../assets/Location1.svg';
 import MoneyIcon from '../../assets/Money.svg';
+import { useNavigation } from '@react-navigation/native';
 
 const ActiveJobCard = () => {
+  const navigation = useNavigation();
+  const MoveToJobDetailsPage =()=>{
+      navigation.navigate('JobDetails');
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Up Next</Text>
@@ -55,7 +60,9 @@ const ActiveJobCard = () => {
         </View>
 
         {/* Button */}
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button}
+        onPress={MoveToJobDetailsPage}
+        >
           <Text style={styles.buttonText}>
             View Details
           </Text>
