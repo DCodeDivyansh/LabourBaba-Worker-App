@@ -6,6 +6,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import OtpVerificationScreen from '../screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from '../screens/auth/CreateProfileScreen';
 import Help from '../screens/profile/Help'
+import LanguageSelectionScreen from '../screens/profile/LanguageSelectionScreen'
 
 import MainTabs from './MainTabs';
 
@@ -44,6 +45,11 @@ export default function AppNavigator() {
           name="Help"
           component={Help}
           options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="Language"
+          component={LanguageSelectionScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

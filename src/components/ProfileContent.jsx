@@ -58,6 +58,9 @@ export default function ProfileContent() {
     const MoveToHelpPage = () => {
         navigation.navigate('Help');
     };
+    const MoveToLanguagePage = () => {
+        navigation.navigate('Language');
+    };
     return (
         <ScrollView
             style={styles.container}
@@ -109,6 +112,7 @@ export default function ProfileContent() {
                     icon={<LanguageIcon width={22} height={22} />}
                     title="Language Selection"
                     subtitle="English (US)"
+                    onPress={MoveToLanguagePage}
                 />
                 <SettingItem
                     icon={<NotificationIcon width={22} height={22}/>}
