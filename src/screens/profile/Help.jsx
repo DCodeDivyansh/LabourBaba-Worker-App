@@ -1,12 +1,12 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import TopAppBar from '../components/TopAppBar';
-import Booking from '../../assets/booking.svg';
-import DropDown from '../../assets/dropdown.svg';
-import Payment from '../../assets/payment.svg';
-import User from '../../assets/user.svg';
-import Call from '../../assets/call.svg';
-import Email from '../../assets/email.svg';
+import TopAppBar from '../../components/TopAppBar';
+import Booking from '../../../assets/booking.svg';
+import DropDown from '../../../assets/dropdown.svg';
+import Payment from '../../../assets/payment.svg';
+import User from '../../../assets/user.svg';
+import Call from '../../../assets/call.svg';
+import Email from '../../../assets/email.svg';
 
 const Help = () => {
   return (

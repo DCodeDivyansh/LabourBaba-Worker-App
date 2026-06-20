@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import TopAppBar from '../components/TopAppBar';
+import TopAppBar from '../../components/TopAppBar';
 import Worker from '../../assets/worker.svg';
 
 const Review = () => {

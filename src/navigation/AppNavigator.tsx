@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/auth/LoginScreen';
 import OtpVerificationScreen from '../screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from '../screens/auth/CreateProfileScreen';
+import Help from '../screens/profile/Help'
 
 import MainTabs from './MainTabs';
 
@@ -37,6 +38,12 @@ export default function AppNavigator() {
         <Stack.Screen
           name="MainTabs"
           component={MainTabs}
+        />
+
+        <Stack.Screen
+          name="Help"
+          component={Help}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

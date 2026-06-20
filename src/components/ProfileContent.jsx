@@ -11,16 +11,20 @@ import NotificationIcon from '../../assets/NotificationIcon3.svg'
 import PrivacyPolicyIcon from '../../assets/PrivacyPolicyIcon.svg'
 import HelpAndSupportIcon from '../../assets/HelpAndSupportIcon.svg'
 import LogoutIcon from '../../assets/LogOut.svg'
+import { useNavigation } from '@react-navigation/native';
 
 const SettingItem = ({
     icon,
     title,
     subtitle,
     showDivider = true,
+    onPress,
 }) => {
     return (
         <>
-            <TouchableOpacity style={styles.settingRow}>
+            <TouchableOpacity style={styles.settingRow}
+            onPress={onPress}
+            >
                 <View style={styles.leftSection}>
                     <View style={styles.iconCircle}>
                         {icon}
@@ -50,6 +54,10 @@ const SettingItem = ({
 };
 
 export default function ProfileContent() {
+    const navigation = useNavigation();
+    const MoveToHelpPage = () => {
+        navigation.navigate('Help');
+    };
     return (
         <ScrollView
             style={styles.container}
@@ -115,6 +123,7 @@ export default function ProfileContent() {
                 <SettingItem
                     icon={<HelpAndSupportIcon width={22} height={22}/>}
                     title="Help & Support"
+                    onPress={MoveToHelpPage}
                 />
 
                 <SettingItem
