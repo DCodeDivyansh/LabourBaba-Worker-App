@@ -11,7 +11,6 @@ export default function AlertsScreen() {
         <ScrollView>
                 <Notification />
             </ScrollView>
-        <BottomNav/>
     </View>
   )
 }

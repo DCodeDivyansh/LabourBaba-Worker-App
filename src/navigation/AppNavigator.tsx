@@ -5,17 +5,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/auth/LoginScreen';
 import OtpVerificationScreen from '../screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from '../screens/auth/CreateProfileScreen';
-import WorkerDashboardScreen from '../screens/jobs/WorkerDashboardScreen';
 
-export type RootStackParamList = {
-  Login: undefined;
-  OtpVerification: undefined;
-  CreateProfile: undefined;
-  Dashboard: undefined;
-};
+import MainTabs from './MainTabs';
 
-const Stack =
-  createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   return (
@@ -42,8 +35,8 @@ export default function AppNavigator() {
         />
 
         <Stack.Screen
-          name="Dashboard"
-          component={WorkerDashboardScreen}
+          name="MainTabs"
+          component={MainTabs}
         />
       </Stack.Navigator>
     </NavigationContainer>

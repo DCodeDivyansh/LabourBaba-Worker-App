@@ -11,11 +11,7 @@ export default function CreateProfileScreen({ navigation }: any) {
     const handleSubmit = () => {
         navigation.reset({
             index: 0,
-            routes: [
-                {
-                    name: 'Dashboard',
-                },
-            ],
+            routes: [{ name: 'MainTabs' }],
         });
     };
     return (

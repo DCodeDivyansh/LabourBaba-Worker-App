@@ -1,6 +1,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import BottomNav from '../components/BottomNav';
+
 import WorkerDashboardScreen from '../screens/jobs/WorkerDashboardScreen';
 import JobsScreen from '../screens/jobs/JobsHistory';
 import AlertsScreen from '../screens/jobs/AlertsScreen';
@@ -11,6 +13,9 @@ const Tab = createBottomTabNavigator();
 export default function MainTabs() {
   return (
     <Tab.Navigator
+      tabBar={(props) => (
+        <BottomNav {...props} />
+      )}
       screenOptions={{
         headerShown: false,
       }}

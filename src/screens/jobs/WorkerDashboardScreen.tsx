@@ -28,7 +28,6 @@ export default function WorkerDashboardScreen() {
       </ScrollView>
 
       <View style={styles.bottomNavContainer}>
-        <BottomNav />
       </View>
     </View>
   );

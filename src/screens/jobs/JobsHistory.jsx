@@ -11,7 +11,6 @@ export default function JobsHistory() {
             <ScrollView>
                 <MyJobList />
             </ScrollView>
-            <BottomNav />
 
         </View>
     )

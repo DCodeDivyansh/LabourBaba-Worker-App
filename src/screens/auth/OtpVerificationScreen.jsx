@@ -14,11 +14,7 @@ export default function OtpVerificationScreen({
 
     navigation.reset({
       index: 0,
-      routes: [
-        {
-          name: 'Dashboard',
-        },
-      ],
+      routes: [{ name: 'MainTabs' }],
     });
   };
 

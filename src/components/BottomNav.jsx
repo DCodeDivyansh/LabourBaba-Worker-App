@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -18,9 +18,10 @@ import Alerts from '../../assets/NotificationIcon2.svg';
 import ProfileActive from '../../assets/ProfileIcon.svg';
 import Profile from '../../assets/ProfileIcon2.svg';
 
-const BottomNav = () => {
-  const [activeTab, setActiveTab] = useState('Home');
-
+const BottomNav = ({
+  state,
+  navigation,
+}) => {
   const tabs = [
     {
       name: 'Home',
@@ -47,12 +48,16 @@ const BottomNav = () => {
 
   return (
     <View style={styles.container}>
-      {tabs.map(tab => {
-        const isActive = activeTab === tab.name;
+      {tabs.map((tab, index) => {
+        const isActive =
+          state.index === index;
 
         const Icon = isActive
           ? tab.activeIcon
           : tab.icon;
+
+        const route =
+          state.routes[index];
 
         return (
           <TouchableOpacity
@@ -60,22 +65,36 @@ const BottomNav = () => {
             activeOpacity={0.8}
             style={[
               styles.tab,
-              isActive && styles.activeTab,
+              isActive &&
+                styles.activeTab,
             ]}
-            onPress={() => setActiveTab(tab.name)}
+            onPress={() => {
+              navigation.navigate(
+                route.name,
+              );
+            }}
           >
-            <View style={styles.iconContainer}>
-              <Icon width={22} height={22} />
+            <View
+              style={styles.iconContainer}
+            >
+              <Icon
+                width={22}
+                height={22}
+              />
 
-              {tab.badge && !isActive && (
-                <View style={styles.badge} />
-              )}
+              {tab.badge &&
+                !isActive && (
+                  <View
+                    style={styles.badge}
+                  />
+                )}
             </View>
 
             <Text
               style={[
                 styles.label,
-                isActive && styles.activeLabel,
+                isActive &&
+                  styles.activeLabel,
               ]}
             >
               {tab.name}
