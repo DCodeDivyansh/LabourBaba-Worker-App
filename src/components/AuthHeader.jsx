@@ -4,15 +4,16 @@ import {
   Text,
   Image,
   StyleSheet,
-  SafeAreaView,
+  Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const { width } = Dimensions.get('window');
 
 const AuthHeader = () => {
   return (
-    <SafeAreaView>
+    <SafeAreaView edges={['top']}>
       <View style={styles.container}>
-
-        {/* Logo Section */}
         <View style={styles.logoContainer}>
           <Image
             source={require('../../assets/logo.png')}
@@ -28,7 +29,6 @@ const AuthHeader = () => {
             Find Book Build
           </Text>
         </View>
-
       </View>
     </SafeAreaView>
   );
@@ -39,28 +39,28 @@ export default AuthHeader;
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingTop: 30,
+    paddingTop: 10,
   },
 
   logoContainer: {
     alignItems: 'center',
-    marginTop: 60,
+    marginTop: 20,
   },
 
   logo: {
-    width: 220,
-    height: 80,
+    width: width * 0.55,
+    height: width * 0.20,
   },
 
   brandName: {
-    fontSize: 38,
+    fontSize: 36,
     fontWeight: '700',
     color: '#FF6200',
     marginTop: 8,
   },
 
   tagline: {
-    fontSize: 22,
+    fontSize: 18,
     color: '#6D4C41',
     marginTop: 4,
   },

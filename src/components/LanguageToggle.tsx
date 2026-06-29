@@ -5,14 +5,24 @@ import {
   TouchableOpacity,
   Animated,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
+
+const { width } = Dimensions.get('window');
+
+const TOGGLE_WIDTH = width * 0.42; // 42% of screen width
+const TOGGLE_HEIGHT = TOGGLE_WIDTH * 0.275;
+
+const OPTION_WIDTH = TOGGLE_WIDTH / 2;
+const ACTIVE_WIDTH = OPTION_WIDTH;
+const ACTIVE_HEIGHT = TOGGLE_HEIGHT * 0.86;
 
 const LanguageToggle = () => {
   const [selected, setSelected] = useState('English');
 
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const toggleLanguage = (lang) => {
+  const toggleLanguage = (lang:any) => {
     setSelected(lang);
 
     Animated.timing(slideAnim, {
@@ -24,7 +34,7 @@ const LanguageToggle = () => {
 
   const translateX = slideAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 80],
+    outputRange: [0, OPTION_WIDTH],
   });
 
   return (
@@ -34,6 +44,9 @@ const LanguageToggle = () => {
           style={[
             styles.activeBackground,
             {
+              width: ACTIVE_WIDTH,
+              height: ACTIVE_HEIGHT,
+              borderRadius: ACTIVE_HEIGHT / 2,
               transform: [{ translateX }],
             },
           ]}
@@ -76,14 +89,13 @@ export default LanguageToggle;
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginTop: 40,
-    top: 10,
+    marginTop: '10%',
   },
 
   toggleWrapper: {
-    width: 160,
-    height: 44,
-    borderRadius: 22,
+    width: TOGGLE_WIDTH,
+    height: TOGGLE_HEIGHT,
+    borderRadius: TOGGLE_HEIGHT / 2,
     backgroundColor: '#EFE5DE',
     flexDirection: 'row',
     position: 'relative',
@@ -92,23 +104,20 @@ const styles = StyleSheet.create({
 
   activeBackground: {
     position: 'absolute',
-    width: 80,
-    height: 38,
-    borderRadius: 19,
     backgroundColor: '#FF6200',
-    top: 3,
+    top: '7%',
     left: 0,
   },
 
   option: {
-    width: 80,
+    width: '50%',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
   },
 
   text: {
-    fontSize: 14,
+    fontSize: width * 0.036,
     color: '#6D4C41',
     fontWeight: '500',
   },

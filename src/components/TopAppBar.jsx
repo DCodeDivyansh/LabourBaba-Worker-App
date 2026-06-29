@@ -1,93 +1,93 @@
 import React from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
-import BackIcon from '../../assets/BackIcon.svg';
-import Share from '../../assets/share.svg'
 
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
+import BackIcon from '../../assets/BackIcon.svg';
+
 const TopAppBar = ({
-    title,
-    showBackButton = true,
+  title,
+  showBackButton = true,
 }) => {
-      const navigation = useNavigation();
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
-    return (
-        <View style={styles.container}>
-            {showBackButton && (
-                <TouchableOpacity
-                  onPress={() => navigation.goBack()}
-                style={styles.backButton}
-                >
-                    <BackIcon width={24} height={24} />
-                </TouchableOpacity>
-            )}
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          height: 60 + insets.top,
+        },
+      ]}
+    >
+      {showBackButton ? (
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <BackIcon width={24} height={24} />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.spacer} />
+      )}
 
-            <Text style={styles.title}>
-                {title}
-            </Text>
+      <Text
+        numberOfLines={1}
+        style={styles.title}
+      >
+        {title}
+      </Text>
 
-            <View style={styles.spacer} />
-
-            {/* <TouchableOpacity style={styles.shareButton}>
-                <Share width={44} height={44} />
-            </TouchableOpacity> */}
-        </View>
-    );
+      <View style={styles.spacer} />
+    </View>
+  );
 };
 
 export default TopAppBar;
 
 const styles = StyleSheet.create({
-    container: {
-        top: 0,
-        paddingTop: 30,
-        height: 94,
-        width:'100%',
-        backgroundColor: '#ffffff',
+  container: {
+    backgroundColor: '#FFFFFF',
 
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
 
-        paddingHorizontal: 16,
+    paddingHorizontal: 16,
 
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
-        elevation: 4,
-    },
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F1F1',
 
-    backButton: {
-        padding: 4,
-        height: 32,
-        width: 32,
-    },
-    shareButton: {
-        padding: 4,
-        height: 32,
-        width: 32,
-        left:-10,
-        top:-8,
-    },
-    spacer: {
-        width: 32,
-    },
+    elevation: 3,
+  },
 
-    title: {
-        flex: 1,
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#FF5A00',
-        textAlign: 'center',
-    },
+  backButton: {
+    width: 40,
+    height: 40,
+
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  spacer: {
+    width: 40,
+  },
+
+  title: {
+    flex: 1,
+
+    textAlign: 'center',
+
+    fontSize: 24,
+    fontWeight: '700',
+
+    color: '#FF5A00',
+  },
 });

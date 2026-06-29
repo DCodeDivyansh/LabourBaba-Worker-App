@@ -19,21 +19,6 @@ const languages = [
     name: 'Hindi (हिन्दी)',
     icon: '文A',
   },
-  {
-    id: 3,
-    name: 'Marathi (मराठी)',
-    icon: '文A',
-  },
-  {
-    id: 4,
-    name: 'Punjabi (ਪੰਜਾਬੀ)',
-    icon: '文A',
-  },
-  {
-    id: 5,
-    name: 'Bengali (বাংলা)',
-    icon: '文A',
-  },
 ];
 
 const LanguageSelectionScreen = () => {
@@ -131,7 +116,7 @@ const styles = StyleSheet.create({
   },
 
   languageCard: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
     paddingHorizontal: 18,
     paddingVertical: 22,

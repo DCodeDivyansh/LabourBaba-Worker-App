@@ -4,7 +4,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeActive from '../../assets/HomeIcon.svg';
 import Home from '../../assets/HomeIcon2.svg';
@@ -18,10 +20,11 @@ import Alerts from '../../assets/NotificationIcon2.svg';
 import ProfileActive from '../../assets/ProfileIcon.svg';
 import Profile from '../../assets/ProfileIcon2.svg';
 
-const BottomNav = ({
-  state,
-  navigation,
-}) => {
+const { width } = Dimensions.get('window');
+
+const BottomNav = ({ state, navigation }) => {
+  const insets = useSafeAreaInsets();
+
   const tabs = [
     {
       name: 'Home',
@@ -47,7 +50,17 @@ const BottomNav = ({
   ];
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingBottom: Math.max(
+            insets.bottom,
+            10
+          ),
+        },
+      ]}
+    >
       {tabs.map((tab, index) => {
         const isActive =
           state.index === index;
@@ -68,18 +81,18 @@ const BottomNav = ({
               isActive &&
                 styles.activeTab,
             ]}
-            onPress={() => {
+            onPress={() =>
               navigation.navigate(
                 route.name,
-              );
-            }}
+              )
+            }
           >
             <View
               style={styles.iconContainer}
             >
               <Icon
-                width={22}
-                height={22}
+                width={width * 0.055}
+                height={width * 0.055}
               />
 
               {tab.badge &&
@@ -110,23 +123,32 @@ export default BottomNav;
 
 const styles = StyleSheet.create({
   container: {
-    height: 80,
     backgroundColor: '#FFFFFF',
 
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
 
-    paddingHorizontal: 16,
+    paddingHorizontal: width * 0.04,
+    paddingTop: 10,
 
     borderTopWidth: 1,
     borderTopColor: '#EFEFEF',
 
-    elevation: 10,
+    elevation: 12,
+
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
   },
 
   tab: {
     flex: 1,
+
     height: 54,
 
     alignItems: 'center',
@@ -145,7 +167,7 @@ const styles = StyleSheet.create({
 
   label: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: width * 0.03,
     fontWeight: '500',
     color: '#6B4E3D',
   },

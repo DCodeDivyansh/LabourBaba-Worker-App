@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
+import { Dimensions } from 'react-native';
 
 
 interface LoginFormProps {
@@ -75,38 +76,41 @@ const LoginForm = ({
 
 export default LoginForm;
 
+
+
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    height: 360,
-    width: '90%',
-    alignSelf: 'center',
-    marginTop: 20,
-    elevation: 6,
-    borderRadius: 18,
-    paddingHorizontal: 26,
-    paddingVertical: 24,
-    borderWidth: 1,
-    borderColor: '#E2BFB0',
-  },
+  backgroundColor: '#ffffff',
+  width: '90%',
+  alignSelf: 'center',
+  marginTop: 16,
+  elevation: 6,
+  borderRadius: 18,
+  paddingHorizontal: 20,
+  paddingVertical: 20,
+  borderWidth: 1,
+  borderColor: '#E2BFB0',
+},
 
   label: {
-    fontSize: 15,
+    fontSize: width * 0.038,
     color: '#2F2F2F',
-    marginBottom: 10,
+    marginBottom: width * 0.025,
   },
 
   inputContainer: {
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#B89A8A',
-    borderRadius: 10,
+    borderRadius: width * 0.025,
     overflow: 'hidden',
-    height: 54,
+    height: width * 0.14,
   },
 
   countryCode: {
-    width: 62,
+    width: width * 0.16,
     justifyContent: 'center',
     alignItems: 'center',
     borderRightWidth: 1,
@@ -114,25 +118,25 @@ const styles = StyleSheet.create({
   },
 
   countryText: {
-    fontSize: 16,
+    fontSize: width * 0.04,
     color: '#333',
     fontWeight: '500',
   },
 
   input: {
     flex: 1,
-    paddingHorizontal: 16,
-    fontSize: 15,
+    paddingHorizontal: width * 0.04,
+    fontSize: width * 0.038,
     color: '#333',
   },
 
   otpButton: {
-    height: 56,
+    height: width * 0.145,
     backgroundColor: '#FF5A00',
-    borderRadius: 28,
+    borderRadius: width * 0.072,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 26,
+    marginTop: width * 0.065,
 
     elevation: 6,
 
@@ -147,14 +151,14 @@ const styles = StyleSheet.create({
 
   otpText: {
     color: '#FFF',
-    fontSize: 17,
+    fontSize: width * 0.044,
     fontWeight: '700',
   },
 
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 34,
+    marginVertical: width * 0.085,
   },
 
   line: {
@@ -164,17 +168,17 @@ const styles = StyleSheet.create({
   },
 
   dividerText: {
-    marginHorizontal: 14,
-    fontSize: 13,
+    marginHorizontal: width * 0.03,
+    fontSize: width * 0.032,
     color: '#6B5A54',
     letterSpacing: 1,
   },
 
   googleButton: {
-    height: 54,
+    height: width * 0.14,
     borderWidth: 1,
     borderColor: '#B89A8A',
-    borderRadius: 27,
+    borderRadius: width * 0.07,
 
     flexDirection: 'row',
     justifyContent: 'center',
@@ -182,13 +186,13 @@ const styles = StyleSheet.create({
   },
 
   googleLogo: {
-    width: 22,
-    height: 22,
-    marginRight: 12,
+    width: width * 0.055,
+    height: width * 0.055,
+    marginRight: width * 0.03,
   },
 
   googleText: {
-    fontSize: 15,
+    fontSize: width * 0.038,
     fontWeight: '600',
     color: '#2F2F2F',
   },

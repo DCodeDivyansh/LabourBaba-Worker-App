@@ -5,13 +5,16 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-    Image,
+  Image,
 } from 'react-native';
 import PersonalDetailsIcon from '../../assets/PersonalDetailsIcon.svg';
 import CameraIcon from '../../assets/Camera.svg';
 import UploadIcon from '../../assets/UploadIcon.svg';
 
-const PersonalDetailsCard = () => {
+const PersonalDetailsCard = ({
+  workerData,
+  setWorkerData,
+}) => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -39,11 +42,15 @@ const PersonalDetailsCard = () => {
         Full Name (As per Aadhaar)
       </Text>
 
-      <TextInput
-        placeholder="Enter your full name"
-        placeholderTextColor="#D8B6A6"
-        style={styles.input}
-      />
+      {/* <TextInput
+        value={workerData.phone}
+        onChangeText={(text) =>
+          setWorkerData({
+            ...workerData,
+            phone: text,
+          })
+        }
+      /> */}
 
       <Text style={styles.label}>
         Mobile Number
@@ -51,12 +58,14 @@ const PersonalDetailsCard = () => {
 
       <View style={styles.mobileContainer}>
         <TextInput
-          placeholder="Enter your mobile number"
-          maxLength={10}
-          keyboardType="phone-pad"
-          placeholderTextColor="#D8B6A6"
-          style={styles.mobileText}
-        />
+        value={workerData.phone}
+        onChangeText={(text) =>
+          setWorkerData({
+            ...workerData,
+            phone: text,
+          })
+        }
+      />
 
         <Text style={styles.verify}>
           ✔

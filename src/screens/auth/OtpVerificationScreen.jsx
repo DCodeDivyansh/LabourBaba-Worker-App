@@ -1,5 +1,11 @@
-import { StyleSheet, View } from 'react-native';
 import React from 'react';
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 
 import TopAppBar from '../../components/TopAppBar';
 import OtpVerificationContent from '../../components/OtpVerificationContent';
@@ -19,15 +25,32 @@ export default function OtpVerificationScreen({
   };
 
   return (
-    <View style={styles.container}>
-      <TopAppBar title="Verification" />
+  <View style={styles.container}>
+    <TopAppBar title="Verification" />
 
-      <OtpVerificationContent
-        phoneNumber="+91 9876543210"
-        onVerify={handleVerify}
-      />
-    </View>
-  );
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={
+        Platform.OS === 'ios'
+          ? 'padding'
+          : undefined
+      }
+    >
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <OtpVerificationContent
+          phoneNumber="+91 9876543210"
+          onVerify={handleVerify}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </View>
+);
 }
 
 const styles = StyleSheet.create({

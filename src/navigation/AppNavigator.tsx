@@ -8,7 +8,6 @@ import CreateProfileScreen from '../screens/auth/CreateProfileScreen';
 import Help from '../screens/profile/Help'
 import LanguageSelectionScreen from '../screens/profile/LanguageSelectionScreen'
 import JobDetailsScreen from '../screens/OtherPages/JobDetailsScreen';
-import CancelJobScreen from '../screens/OtherPages/CancelJobPage'
 
 import MainTabs from './MainTabs';
 
@@ -56,10 +55,6 @@ export default function AppNavigator() {
         <Stack.Screen
           name="JobDetails"
           component={JobDetailsScreen}
-        />
-        <Stack.Screen
-          name="Cancel"
-          component={CancelJobScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

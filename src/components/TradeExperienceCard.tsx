@@ -8,26 +8,42 @@ import {
 } from 'react-native';
 import TradeIcon from '../../assets/TradeIcon.svg';
 
-const TradeExperienceCard = () => {
-    const [selected, setSelected] = useState([]);
+
+type Props = {
+    workerData: {
+        skill_type: string;
+        skill_category_id: string;
+        // experience: string;
+        // min_wage: string;
+        // max_wage: string;
+    };
+    setWorkerData: React.Dispatch<React.SetStateAction<any>>;
+};
+
+
+const TradeExperienceCard = ({
+    workerData,
+    setWorkerData,
+}: Props) => {
 
     const skills = [
-        // 'Electrician',
-        // 'Plumber',
-        'Mason',
-        // 'Carpenter',
-        // 'Painter',
-        'Labour',
+        {
+            name: "Mason",
+            id: "8487036f-99e1-4373-a076-910bf4e3a777",
+        },
+        {
+            name: "Labour",
+            id: "dae9fb0a-3772-415e-913c-696a1a1ca502",
+        },
     ];
 
-    const toggleSkill = skill => {
-        if (selected.includes(skill)) {
-            setSelected(
-                selected.filter(item => item !== skill),
-            );
-        } else if (selected.length < 3) {
-            setSelected([...selected, skill]);
-        }
+    const toggleSkill = (skill: { name: string; id: string }) => {
+        setWorkerData((prev: any) => ({
+            ...prev,
+            skill_type: prev.skill_type === skill.name ? "" : skill.name,
+            skill_category_id:
+                prev.skill_type === skill.name ? "" : skill.id,
+        }));
     };
 
     return (
@@ -41,40 +57,35 @@ const TradeExperienceCard = () => {
             </View>
 
             <Text style={styles.skillLabel}>
-                Select your primary skills (Max 3)
+                Select your primary skill
             </Text>
 
             <View style={styles.skillContainer}>
-                {skills.map(skill => {
-                    const active =
-                        selected.includes(skill);
+                {skills.map((skill) => {
+                    const active = workerData.skill_type === skill.name;
 
                     return (
                         <TouchableOpacity
-                            key={skill}
-                            onPress={() =>
-                                toggleSkill(skill)
-                            }
+                            key={skill.id}
+                            onPress={() => toggleSkill(skill)}
                             style={[
                                 styles.skillChip,
-                                active &&
-                                styles.activeChip,
+                                active && styles.activeChip,
                             ]}>
                             <Text
                                 style={[
                                     styles.skillText,
-                                    active &&
-                                    styles.activeText,
+                                    active && styles.activeText,
                                 ]}>
-                                {active ? '✓ ' : ''}
-                                {skill}
+                                {active ? "✓ " : ""}
+                                {skill.name}
                             </Text>
                         </TouchableOpacity>
                     );
                 })}
             </View>
 
-            <Text style={styles.label}>
+            {/* <Text style={styles.label}>
                 Years of Experience
             </Text>
 
@@ -102,7 +113,7 @@ const TradeExperienceCard = () => {
                     keyboardType="numeric"
                     style={[styles.input, { flex: 1 }]}
                 />
-            </View>
+            </View> */}
         </View>
     );
 };

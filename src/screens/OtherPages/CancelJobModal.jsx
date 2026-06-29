@@ -5,105 +5,124 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 const reasons = [
   'Personal Emergency',
   'Location Too Far',
   'Customer Not Responding',
-  'Find Somewhere Else',
+  'Found Somewhere Else',
   'Other Reason',
 ];
 
-const CancelJobModal = () => {
-  const [selectedReason, setSelectedReason] = useState(null);
-  const navigation = useNavigation();
+const CancelJobModal = ({
+  visible,
+  onClose,
+  onConfirm,
+}) => {
+  const [selectedReason, setSelectedReason] =
+    useState(null);
 
   return (
     <Modal
-      // visible={visible}
+      visible={visible}
       transparent
       animationType="slide"
+      statusBarTranslucent
+      onRequestClose={onClose}
     >
       <View style={styles.overlay}>
         <View style={styles.container}>
-          {/* Handle */}
           <View style={styles.handle} />
 
-          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>
               Cancel Job
             </Text>
 
-            <TouchableOpacity onPress={() => navigation.goBack()} >
+            <TouchableOpacity
+              onPress={onClose}
+            >
               <Text style={styles.close}>
                 ✕
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Description */}
           <Text style={styles.description}>
-            Please select the primary reason for
-            cancelling this job.
+            Please select the primary reason
+            for cancelling this job.
           </Text>
 
-          {/* Options */}
-          {reasons.map((reason, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.option}
-              onPress={() =>
-                setSelectedReason(reason)
-              }
-            >
-              <Text style={styles.optionText}>
-                {reason}
-              </Text>
-
-              <View
-                style={[
-                  styles.radioOuter,
-                  selectedReason === reason &&
-                    styles.radioOuterSelected,
-                ]}
+          <ScrollView
+            showsVerticalScrollIndicator={
+              false
+            }
+          >
+            {reasons.map(reason => (
+              <TouchableOpacity
+                key={reason}
+                style={styles.option}
+                onPress={() =>
+                  setSelectedReason(reason)
+                }
               >
-                {selectedReason === reason && (
-                  <View
-                    style={styles.radioInner}
-                  />
-                )}
-              </View>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={styles.optionText}
+                >
+                  {reason}
+                </Text>
 
-          {/* Warning Box */}
+                <View
+                  style={[
+                    styles.radioOuter,
+                    selectedReason ===
+                      reason &&
+                      styles.radioOuterSelected,
+                  ]}
+                >
+                  {selectedReason ===
+                    reason && (
+                    <View
+                      style={
+                        styles.radioInner
+                      }
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
           <View style={styles.warningBox}>
             <Text style={styles.warningText}>
-              ⚠️ Warning: Frequent cancellations
-              may impact your worker rating and
-              visibility on the platform.
+              ⚠️ Frequent cancellations
+              may affect your worker
+              rating and visibility.
             </Text>
           </View>
 
-          {/* Confirm Button */}
           <TouchableOpacity
-            style={styles.confirmBtn}
-            // onPress={() =>
-            //   onConfirm(selectedReason)
-            // }
+            disabled={!selectedReason}
+            style={[
+              styles.confirmBtn,
+              !selectedReason && {
+                opacity: 0.5,
+              },
+            ]}
+            onPress={() =>
+              onConfirm(selectedReason)
+            }
           >
             <Text style={styles.confirmText}>
               Confirm Cancellation
             </Text>
           </TouchableOpacity>
 
-          {/* Go Back */}
           <TouchableOpacity
             style={styles.backBtn}
-            onPress={() => navigation.goBack()}
+            onPress={onClose}
           >
             <Text style={styles.backText}>
               Go Back
@@ -120,7 +139,8 @@ export default CancelJobModal;
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor:
+      'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
 
@@ -128,27 +148,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingHorizontal: 16,
-    paddingBottom: 30,
-    paddingTop: 10,
+    padding: 16,
+    maxHeight: '85%',
   },
 
   handle: {
     width: 50,
     height: 5,
-    borderRadius: 10,
-    backgroundColor: '#D9B8A7',
+    borderRadius: 3,
+    backgroundColor: '#D9D9D9',
     alignSelf: 'center',
     marginBottom: 20,
   },
 
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ECECEC',
   },
 
   title: {
@@ -159,14 +176,14 @@ const styles = StyleSheet.create({
 
   close: {
     fontSize: 28,
-    color: '#6B4E42',
+    color: '#666',
   },
 
   description: {
     color: '#FF5A00',
-    fontSize: 18,
-    lineHeight: 28,
-    marginVertical: 20,
+    fontSize: 16,
+    marginTop: 16,
+    marginBottom: 20,
   },
 
   option: {
@@ -174,24 +191,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FFD7C2',
     borderRadius: 14,
-    marginBottom: 14,
     paddingHorizontal: 16,
+    marginBottom: 12,
+
     flexDirection: 'row',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
 
   optionText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#333',
   },
 
   radioOuter: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 2,
-    borderColor: '#F2C7B3',
+    borderColor: '#FFD7C2',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -201,56 +220,53 @@ const styles = StyleSheet.create({
   },
 
   radioInner: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     backgroundColor: '#FF5A00',
   },
 
   warningBox: {
     backgroundColor: '#FDE3E0',
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#F4B7B1',
     padding: 16,
-    marginTop: 24,
+    marginTop: 12,
   },
 
   warningText: {
     color: '#C62828',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    lineHeight: 26,
   },
 
   confirmBtn: {
+    height: 56,
     backgroundColor: '#C91616',
-    height: 58,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: 20,
   },
 
   confirmText: {
     color: '#FFF',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
 
   backBtn: {
-    height: 58,
-    borderRadius: 14,
+    height: 56,
     borderWidth: 1,
     borderColor: '#FFD7C2',
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 14,
+    marginTop: 12,
   },
 
   backText: {
     color: '#FF5A00',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

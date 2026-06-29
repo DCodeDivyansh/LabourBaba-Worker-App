@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
+  StyleSheet,
   FlatList,
+  Dimensions,
 } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 const jobsData = [
   {
@@ -102,6 +105,7 @@ const MyJobsList = () => {
                 styles.tabText,
                 activeTab === tab && styles.activeTabText,
               ]}
+              numberOfLines={1}
             >
               {tab}
             </Text>
@@ -114,6 +118,9 @@ const MyJobsList = () => {
         keyExtractor={item => item.id}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: height * 0.03,
+        }}
       />
     </View>
   );
@@ -124,36 +131,42 @@ export default MyJobsList;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: width * 0.05,
     backgroundColor: '#F8F8F8',
   },
 
   heading: {
-    fontSize: 34,
+    fontSize: width * 0.08,
     fontWeight: '700',
     color: '#212121',
-    marginTop: 24,
+    marginTop: height * 0.03,
   },
 
   subHeading: {
-    fontSize: 16,
+    fontSize: width * 0.04,
     color: '#6B6B6B',
-    marginTop: 6,
-    marginBottom: 24,
+    marginTop: height * 0.008,
+    marginBottom: height * 0.03,
   },
 
   tabs: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: height * 0.03,
   },
 
   tab: {
+    flex: 1,
+    marginHorizontal: 4,
+
     borderWidth: 1,
     borderColor: '#F27A2D',
-    borderRadius: 24,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+
+    borderRadius: width * 0.06,
+
+    paddingVertical: height * 0.015,
+
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   activeTab: {
@@ -164,6 +177,7 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#6B4E3D',
     fontWeight: '600',
+    fontSize: width * 0.032,
   },
 
   activeTabText: {
@@ -172,8 +186,8 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    marginBottom: 18,
+    borderRadius: width * 0.045,
+    marginBottom: height * 0.02,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#F0D1C0',
@@ -187,31 +201,33 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: width * 0.04,
   },
 
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: width * 0.13,
+    height: width * 0.13,
+    borderRadius: width * 0.065,
+
     backgroundColor: '#E7E7E7',
+
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   avatarText: {
-    fontSize: 22,
+    fontSize: width * 0.05,
     fontWeight: '700',
     color: '#555',
   },
 
   userInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: width * 0.03,
   },
 
   name: {
-    fontSize: 24,
+    fontSize: width * 0.05,
     fontWeight: '700',
     color: '#212121',
   },
@@ -219,41 +235,41 @@ const styles = StyleSheet.create({
   rating: {
     marginTop: 2,
     color: '#5A4035',
-    fontSize: 14,
+    fontSize: width * 0.034,
   },
 
   tradeBadge: {
     backgroundColor: '#FF6200',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: width * 0.03,
+    paddingVertical: height * 0.008,
+    borderRadius: width * 0.02,
   },
 
   tradeText: {
     color: '#FFF',
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: width * 0.03,
   },
 
   infoContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: width * 0.04,
   },
 
   info: {
-    fontSize: 16,
+    fontSize: width * 0.038,
     color: '#6B4E3D',
-    marginBottom: 12,
+    marginBottom: height * 0.012,
   },
 
   divider: {
     height: 1,
     backgroundColor: '#E6E6E6',
-    marginHorizontal: 16,
-    marginTop: 6,
+    marginHorizontal: width * 0.04,
+    marginTop: height * 0.006,
   },
 
   bottomRow: {
-    padding: 16,
+    padding: width * 0.04,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -262,19 +278,22 @@ const styles = StyleSheet.create({
   status: {
     color: '#FF6200',
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: width * 0.036,
   },
 
   detailButton: {
     borderWidth: 2,
     borderColor: '#FF6200',
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
+
+    borderRadius: width * 0.06,
+
+    paddingHorizontal: width * 0.06,
+    paddingVertical: height * 0.012,
   },
 
   detailText: {
     color: '#FF6200',
     fontWeight: '700',
+    fontSize: width * 0.035,
   },
 });

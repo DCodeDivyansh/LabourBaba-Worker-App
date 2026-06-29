@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,10 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
+
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 const OtpVerificationContent = ({
   phoneNumber = '+91 9876543210',
@@ -110,79 +114,80 @@ export default OtpVerificationContent;
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: width * 0.06,
     backgroundColor: '#F8F7F6',
+    flex: 1,
   },
 
   logo: {
-    width: 260,
-    height: 90,
-    marginTop: 30,
+    width: width * 0.65,
+    height: width * 0.22,
+    marginTop: height * 0.04,
   },
 
   tagline: {
-    fontSize: 18,
+    fontSize: width * 0.045,
     color: '#6B4D41',
     letterSpacing: 1,
-    marginTop: 0,
     fontWeight: '500',
   },
 
   heading: {
-    marginTop: 65,
-    fontSize: 22,
+    marginTop: height * 0.08,
+    fontSize: width * 0.055,
     fontWeight: '700',
     color: '#1D1D1D',
   },
 
   description: {
-    marginTop: 18,
-    fontSize: 15,
+    marginTop: height * 0.02,
+    fontSize: width * 0.038,
     color: '#64748B',
   },
 
   phone: {
-    marginTop: 8,
-    fontSize: 16,
+    marginTop: height * 0.01,
+    fontSize: width * 0.042,
     color: '#1D1D1D',
     fontWeight: '500',
   },
 
   otpContainer: {
     flexDirection: 'row',
-    marginTop: 25,
-    gap: 10,
+    marginTop: height * 0.03,
+    justifyContent: 'space-between',
+    width: '100%',
   },
 
   otpBox: {
-    width: 48,
-    height: 56,
+    width: width * 0.12,
+    height: width * 0.14,
     borderWidth: 1,
     borderColor: '#E0B8A7',
-    borderRadius: 8,
-    fontSize: 20,
+    borderRadius: width * 0.02,
+    fontSize: width * 0.05,
     backgroundColor: '#FFF',
   },
 
   infoText: {
-    marginTop: 25,
-    fontSize: 16,
+    marginTop: height * 0.03,
+    fontSize: width * 0.04,
     color: '#64748B',
   },
 
   resendText: {
-    marginTop: 18,
-    fontSize: 16,
+    marginTop: height * 0.02,
+    fontSize: width * 0.04,
     fontWeight: '600',
     color: '#D95A00',
   },
 
   button: {
     width: '100%',
-    height: 58,
+    height: width * 0.15,
     backgroundColor: '#FF5A00',
-    borderRadius: 14,
-    marginTop: 65,
+    borderRadius: width * 0.035,
+    marginTop: height * 0.08,
 
     justifyContent: 'center',
     alignItems: 'center',
@@ -199,13 +204,13 @@ const styles = StyleSheet.create({
 
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: width * 0.045,
     fontWeight: '700',
   },
 
   termsText: {
-    top: 160,
-    fontSize: 12,
+    marginTop: height * 0.04,
+    fontSize: width * 0.03,
     color: '#64748B',
     textAlign: 'center',
   },

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,9 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TopAppBar from '../../components/TopAppBar';
 import TickIcon from '../../../assets/TickIcon.svg'
@@ -14,24 +17,28 @@ import LocationIcon from '../../../assets/Location.svg'
 import MoneyIcon from '../../../assets/MoneyIcon.svg'
 import CalenderIcon from '../../../assets/CalenderIcon.svg'
 import NavigateIcon from '../../../assets/Navigateicon.svg'
-import { useNavigation } from '@react-navigation/native';
+import CancelJobModal from './CancelJobModal';
 
 const JobDetailsScreen = () => {
   const navigation = useNavigation();
+  const [showCancelModal, setShowCancelModal] =
+    useState(false);
   return (
     <View style={styles.container}>
       {/* Header */}
 
-    <TopAppBar title="Job Details"/>
+      <TopAppBar title="Job Details" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
+        contentContainerStyle={{
+          paddingBottom: 120,
+        }}
       >
         {/* Status */}
         <View style={styles.statusRow}>
           <View style={styles.acceptedBadge}>
-            <TickIcon/>
+            <TickIcon />
             <Text style={styles.acceptedText}>
               Job Accepted
             </Text>
@@ -83,7 +90,7 @@ const JobDetailsScreen = () => {
         <View style={styles.infoRow}>
           <View style={styles.infoCard}>
             <View style={styles.cardLabel}>
-              <CalenderIcon/>
+              <CalenderIcon />
               <Text style={styles.cardLabelText}>
                 SCHEDULE
               </Text>
@@ -100,7 +107,7 @@ const JobDetailsScreen = () => {
 
           <View style={styles.infoCard}>
             <View style={styles.cardLabel}>
-              <MoneyIcon/>
+              <MoneyIcon />
               <Text style={styles.cardLabelText}>
                 BUDGET
               </Text>
@@ -127,7 +134,7 @@ const JobDetailsScreen = () => {
 
           <View style={styles.addressSection}>
             <View style={styles.addressHeader}>
-              <LocationIcon/>
+              <LocationIcon />
 
               <Text style={styles.addressTitle}>
                 Service Address
@@ -143,7 +150,7 @@ const JobDetailsScreen = () => {
             <TouchableOpacity
               style={styles.navigateBtn}
             >
-              <NavigateIcon/>
+              <NavigateIcon />
 
               <Text style={styles.navigateText}>
                 Navigate
@@ -156,7 +163,7 @@ const JobDetailsScreen = () => {
       {/* Bottom Actions */}
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.callBtn}>
-          
+
 
           <Text style={styles.callText}>
             📞 Call Customer
@@ -165,7 +172,11 @@ const JobDetailsScreen = () => {
 
         <View style={styles.bottomRow}>
           <TouchableOpacity
-          onPress={() => navigation.navigate('Cancel')}>
+            onPress={() => {
+              console.log('Cancel Pressed');
+              setShowCancelModal(true);
+            }}
+          >
             <Text style={styles.cancelText}>
               Cancel Job
             </Text>
@@ -174,7 +185,7 @@ const JobDetailsScreen = () => {
           <TouchableOpacity
             style={styles.completedBtn}
           >
-            <TickIcon/>
+            <TickIcon />
 
             <Text style={styles.completedText}>
               Job Completed
@@ -182,6 +193,17 @@ const JobDetailsScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+      <CancelJobModal
+        visible={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={reason => {
+          console.log('Cancel Reason:', reason);
+
+          setShowCancelModal(false);
+
+          // API Call Here
+        }}
+      />
     </View>
   );
 };
