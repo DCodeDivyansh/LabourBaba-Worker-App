@@ -7,9 +7,33 @@ import {
 } from 'react-native';
 
 import AvailabilityIcon from '../../assets/Avaliable.svg';
+import { updateOnlineStatus } from '../services/workerOnline';
 
 const AvailabilityCard = () => {
   const [available, setAvailable] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const handleToggle = async () => {
+    if (loading) return;
+
+    const newStatus = !available;
+
+    try {
+      setLoading(true);
+
+      const response = await updateOnlineStatus(newStatus);
+
+      console.log(response);
+
+      if (response.success) {
+        // Use backend response
+        setAvailable(response.data.is_online);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.card}>
@@ -32,7 +56,8 @@ const AvailabilityCard = () => {
       <TouchableOpacity
         activeOpacity={0.8}
         style={styles.toggle}
-        onPress={() => setAvailable(!available)}
+        onPress={handleToggle}
+        disabled={loading}
       >
         <View
           style={[
