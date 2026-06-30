@@ -11,32 +11,47 @@ import AuthHeader from '../../components/AuthHeader';
 import LoginForm from '../../components/LoginForm';
 import FooterLink from '../../components/FooterLink';
 import LanguageToggle from '../../components/LanguageToggle';
-import { useEffect } from "react";
-import { getHealth } from "../../services/health";
-import PasswordCard from '../../components/Password';
+import { Alert } from 'react-native';
+import { workerLogin } from '../../services/login';
 
-const LoginScreen = ({ navigation }) => {
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const health = await getHealth();
-        console.log(health);
-      } catch (error) {
-        console.log(error);
+const LoginScreen = ({ navigation }: any) => {
+  const handleLogin = async (
+    mobile: string,
+    password: string,
+  ) => {
+    try {
+      const response = await workerLogin({
+        phone: `${mobile}`,
+        password,
+      });
+
+      console.log(response);
+
+      if (response.success) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "MainTabs" }],
+        });
+
+        // Save response.token using AsyncStorage later
+      } else {
+        Alert.alert('Login Failed', response.message);
       }
-    };
+    } catch (error: any) {
+      console.log(error.response?.data);
 
-    load();
-  }, []);
+      Alert.alert(
+        'Error',
+        error.response?.data?.message ??
+        'Something went wrong',
+      );
+    }
+  };
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={
-        Platform.OS === 'ios'
-          ? 'padding'
-          : undefined
-      }
-    >
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={60}>
       <LanguageToggle />
 
       <ScrollView
@@ -47,11 +62,9 @@ const LoginScreen = ({ navigation }) => {
         <AuthHeader />
 
         <LoginForm
-          onSendOtp={() =>
-            navigation.navigate('OtpVerification')
-          }
+          onLogin={handleLogin}
         />
-        
+
       </ScrollView>
 
       <FooterLink
@@ -73,5 +86,6 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 120,
   },
 });

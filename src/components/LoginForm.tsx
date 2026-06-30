@@ -11,14 +11,17 @@ import { Dimensions } from 'react-native';
 
 
 interface LoginFormProps {
-  onSendOtp: () => void;
+  onLogin: (
+    phone: string,
+    password: string,
+  ) => Promise<void>;
 }
-
 const LoginForm = ({
-  onSendOtp,
+  onLogin,
 }: LoginFormProps) => {
-
   const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <View style={styles.card}>
@@ -42,24 +45,54 @@ const LoginForm = ({
         />
       </View>
 
+
+
+
+      {/* Password Label */}
+      <Text style={[styles.label, { marginTop: 18 }]}>
+        Password
+      </Text>
+
+      {/* Password Input */}
+      <View style={styles.passwordContainer}>
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Enter your password"
+          placeholderTextColor="#BBA79D"
+          secureTextEntry={!showPassword}
+          style={styles.passwordInput}
+        />
+
+        <TouchableOpacity
+          onPress={() => setShowPassword(!showPassword)}>
+          <Text style={styles.showText}>
+            {showPassword ? 'Hide' : 'Show'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+
+
+
       {/* OTP Button */}
       <TouchableOpacity
         style={styles.otpButton}
-        onPress={onSendOtp}
+        onPress={() => onLogin(mobile, password)}
       >
-        <Text style={styles.otpText}>Send OTP</Text>
+        <Text style={styles.otpText}>Login</Text>
       </TouchableOpacity>
 
-      {/* Divider */}
+      {/* Divider
       <View style={styles.dividerContainer}>
         <View style={styles.line} />
         <Text style={styles.dividerText}>
           OR CONTINUE WITH
         </Text>
         <View style={styles.line} />
-      </View>
+      </View> */}
 
-      {/* Google Button */}
+      {/* Google Button
       <TouchableOpacity style={styles.googleButton}>
         <Image
           source={require('../../assets/Google_logo.png')}
@@ -69,7 +102,7 @@ const LoginForm = ({
         <Text style={styles.googleText}>
           Google Sign In
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
@@ -82,17 +115,17 @@ const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   card: {
-  backgroundColor: '#ffffff',
-  width: '90%',
-  alignSelf: 'center',
-  marginTop: 16,
-  elevation: 6,
-  borderRadius: 18,
-  paddingHorizontal: 20,
-  paddingVertical: 20,
-  borderWidth: 1,
-  borderColor: '#E2BFB0',
-},
+    backgroundColor: '#ffffff',
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 16,
+    elevation: 6,
+    borderRadius: 18,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderWidth: 1,
+    borderColor: '#E2BFB0',
+  },
 
   label: {
     fontSize: width * 0.038,
@@ -159,6 +192,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: width * 0.085,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#B89A8A',
+    borderRadius: width * 0.025,
+    height: width * 0.14,
+    paddingHorizontal: width * 0.04,
+    marginTop: width * 0.02,
+  },
+
+  passwordInput: {
+    flex: 1,
+    fontSize: width * 0.038,
+    color: '#333',
+  },
+
+  showText: {
+    color: '#FF5A00',
+    fontWeight: '600',
+    fontSize: width * 0.036,
   },
 
   line: {
