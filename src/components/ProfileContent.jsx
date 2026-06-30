@@ -12,6 +12,8 @@ import PrivacyPolicyIcon from '../../assets/PrivacyPolicyIcon.svg'
 import HelpAndSupportIcon from '../../assets/HelpAndSupportIcon.svg'
 import LogoutIcon from '../../assets/LogOut.svg'
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 
 const SettingItem = ({
     icon,
@@ -23,7 +25,7 @@ const SettingItem = ({
     return (
         <>
             <TouchableOpacity style={styles.settingRow}
-            onPress={onPress}
+                onPress={onPress}
             >
                 <View style={styles.leftSection}>
                     <View style={styles.iconCircle}>
@@ -54,6 +56,40 @@ const SettingItem = ({
 };
 
 export default function ProfileContent() {
+    const handleLogout = () => {
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to logout?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Logout',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            console.log("Step 1");
+
+                            await AsyncStorage.removeItem("token");
+
+                            console.log("Step 2");
+
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: "Login" }],
+                            });
+
+                            console.log("Step 3");
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    },
+                },
+            ]
+        );
+    };
     const navigation = useNavigation();
     const MoveToHelpPage = () => {
         navigation.navigate('Help');
@@ -115,7 +151,7 @@ export default function ProfileContent() {
                     onPress={MoveToLanguagePage}
                 />
                 <SettingItem
-                    icon={<NotificationIcon width={22} height={22}/>}
+                    icon={<NotificationIcon width={22} height={22} />}
                     title="Notification Settings"
                     showDivider={false}
                 />
@@ -125,13 +161,13 @@ export default function ProfileContent() {
 
             <View style={styles.settingsCard}>
                 <SettingItem
-                    icon={<HelpAndSupportIcon width={22} height={22}/>}
+                    icon={<HelpAndSupportIcon width={22} height={22} />}
                     title="Help & Support"
                     onPress={MoveToHelpPage}
                 />
 
                 <SettingItem
-                    icon={<PrivacyPolicyIcon width={22} height={22}/>}
+                    icon={<PrivacyPolicyIcon width={22} height={22} />}
                     title="Privacy Policy"
                     showDivider={false}
                 />
@@ -141,9 +177,10 @@ export default function ProfileContent() {
 
             <TouchableOpacity
                 style={styles.logoutButton}
-            >   
+                onPress={handleLogout}
+            >
                 <Text style={styles.logoutText}>
-                <LogoutIcon/>  Logout
+                    <LogoutIcon />  Logout
                 </Text>
             </TouchableOpacity>
         </ScrollView>
