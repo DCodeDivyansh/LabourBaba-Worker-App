@@ -1,18 +1,40 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import BootSplash from 'react-native-bootsplash';
-import AppNavigator from './src/navigation/AppNavigator';
-import LanguageSelectionScreen from './src/screens/profile/LanguageSelectionScreen';
-import JobDetailsScreen from './src/screens/OtherPages/CancelJobPage'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import AppNavigator from './src/navigation/AppNavigator';
+
 export default function App() {
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
+
   useEffect(() => {
-    BootSplash.hide({ fade: true });
+    init();
   }, []);
+
+  const init = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+
+      if (token) {
+        setInitialRoute('MainTabs');
+      } else {
+        setInitialRoute('Login');
+      }
+    } catch (error) {
+      setInitialRoute('Login');
+    } finally {
+      BootSplash.hide({ fade: true });
+    }
+  };
+
+  if (!initialRoute) {
+    return null;
+  }
 
   return (
     <SafeAreaProvider>
-      <AppNavigator />
+      <AppNavigator initialRoute={initialRoute} />
     </SafeAreaProvider>
   );
 }

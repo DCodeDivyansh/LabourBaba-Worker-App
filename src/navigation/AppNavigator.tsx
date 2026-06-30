@@ -11,13 +11,20 @@ import JobDetailsScreen from '../screens/OtherPages/JobDetailsScreen';
 
 import MainTabs from './MainTabs';
 
+type Props = {
+  initialRoute: string;
+};
+
+
 const Stack = createNativeStackNavigator();
 
-export default function AppNavigator() {
+export default function AppNavigator({
+  initialRoute,
+}: Props) {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Login"
+        initialRouteName={initialRoute}
         screenOptions={{
           headerShown: false,
         }}
