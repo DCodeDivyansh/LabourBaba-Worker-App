@@ -11,6 +11,7 @@ import SafetyBanner from '../../components/SafetyBanner';
 import BottomNav from '../../components/BottomNav';
 import { getWorkerProfile } from '../../services/workerprofile';
 import { useEffect, useState } from 'react';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function WorkerDashboardScreen() {
   const [worker, setWorker] = useState(null);
@@ -21,16 +22,17 @@ export default function WorkerDashboardScreen() {
 
   const loadWorker = async () => {
     try {
-      const response = await getWorkerProfile();
-      console.log(response);
-      setWorker(response.data);
+      const cached = await AsyncStorage.getItem("worker");
+
+      if (cached) {
+        const parsedWorker = JSON.parse(cached);
+        setWorker(parsedWorker);
+        console.log(parsedWorker);
+      }
     } catch (err) {
       console.log(err);
     }
   };
-  console.log(getWorkerProfile);
-  console.log(worker);
-  console.log(worker?.name);
 
   return (
     <View style={styles.container}>

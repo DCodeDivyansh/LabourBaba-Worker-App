@@ -29,12 +29,19 @@ const LoginScreen = ({ navigation }: any) => {
       console.log(response);
 
       if (response.success) {
+        // Save token
+        await AsyncStorage.setItem("token", response.token);
+
+        // Save worker profile
+        await AsyncStorage.setItem(
+          "worker",
+          JSON.stringify(response.data)
+        );
+
         navigation.reset({
           index: 0,
           routes: [{ name: "MainTabs" }],
         });
-        await AsyncStorage.setItem("token", response.token);
-        // Save response.token using AsyncStorage later
       } else {
         Alert.alert('Login Failed', response.message);
       }

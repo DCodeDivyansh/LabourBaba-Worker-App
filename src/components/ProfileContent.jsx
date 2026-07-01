@@ -55,7 +55,9 @@ const SettingItem = ({
     );
 };
 
-export default function ProfileContent() {
+export default function ProfileContent({name = 'Worker',
+  imageUrl, phone}) {
+
     const handleLogout = () => {
         Alert.alert(
             'Logout',
@@ -108,7 +110,7 @@ export default function ProfileContent() {
                 <View style={styles.avatarWrapper}>
                     <View style={styles.avatar}>
                         <Text style={styles.avatarText}>
-                            VY
+                            {name?.split(' ').map(n => n[0]).join('')}
                         </Text>
                     </View>
 
@@ -122,11 +124,11 @@ export default function ProfileContent() {
                 </View>
 
                 <Text style={styles.name}>
-                    Vikram Yadav
+                    {name}
                 </Text>
 
                 <Text style={styles.phone}>
-                    📞 +91 98765 43210
+                    📞 +91 {phone}
                 </Text>
             </View>
 
