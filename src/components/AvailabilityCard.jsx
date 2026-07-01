@@ -10,7 +10,7 @@ import AvailabilityIcon from '../../assets/Avaliable.svg';
 import { updateOnlineStatus } from '../services/workerOnline';
 
 const AvailabilityCard = () => {
-  const [available, setAvailable] = useState(true);
+  const [available, setAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
   const handleToggle = async () => {
     if (loading) return;
