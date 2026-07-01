@@ -42,15 +42,17 @@ const PersonalDetailsCard = ({
         Full Name (As per Aadhaar)
       </Text>
 
-      {/* <TextInput
-        value={workerData.phone}
+      <TextInput
+        style={styles.input}
+        value={workerData.name}
         onChangeText={(text) =>
           setWorkerData({
             ...workerData,
-            phone: text,
+            name: text,
           })
         }
-      /> */}
+        placeholder="Enter Your Name"
+      />
 
       <Text style={styles.label}>
         Mobile Number
@@ -58,18 +60,20 @@ const PersonalDetailsCard = ({
 
       <View style={styles.mobileContainer}>
         <TextInput
-        value={workerData.phone}
-        onChangeText={(text) =>
-          setWorkerData({
-            ...workerData,
-            phone: text,
-          })
-        }
-      />
+          style={styles.mobileInput}
+          value={workerData.phone}
+          onChangeText={(text) =>
+            setWorkerData({
+              ...workerData,
+              phone: text,
+            })
+          }
+          maxLength={10}
+          keyboardType="number-pad"
+          placeholder="Enter mobile number"
+        />
 
-        <Text style={styles.verify}>
-          ✔
-        </Text>
+        <Text style={styles.verify}>✔</Text>
       </View>
 
       <Text style={styles.label}>
@@ -172,16 +176,25 @@ const styles = StyleSheet.create({
   },
 
   mobileContainer: {
-    height: 56,
-    borderWidth: 1,
-    borderColor: '#C89F8D',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    marginBottom: 14,
-
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 50,
+  },
+
+  mobileInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 16,
+  },
+
+  verify: {
+    fontSize: 18,
+    color: 'green',
+    marginLeft: 10,
   },
 
   mobileText: {
