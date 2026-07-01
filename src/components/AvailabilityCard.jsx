@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 
 import AvailabilityIcon from '../../assets/Avaliable.svg';
@@ -52,7 +53,9 @@ const AvailabilityCard = () => {
 
         <View style={styles.textContainer}>
           <Text style={styles.title}>
-            Available Now
+            {loading
+              ? 'Going online...'
+              : 'Available Now'}
           </Text>
 
           <Text style={styles.subtitle}>
@@ -69,12 +72,16 @@ const AvailabilityCard = () => {
         onPress={handleToggle}
         disabled={loading}
       >
-        <View
-          style={[
-            styles.thumb,
-            isOnline && styles.thumbRight,
-          ]}
-        />
+        {loading ? (
+          <ActivityIndicator size="small" color="#FF6200" />
+        ) : (
+          <View
+            style={[
+              styles.thumb,
+              isOnline && styles.thumbRight,
+            ]}
+          />
+        )}
       </TouchableOpacity>
     </View>
   );
