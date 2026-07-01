@@ -9,6 +9,8 @@ import {
 import AvailabilityIcon from '../../assets/Avaliable.svg';
 import { updateOnlineStatus } from '../services/workerOnline';
 import { useOnlineStatus } from '../api/OnlineStatusContext';
+import { getCurrentLocation } from '../services/location';
+import { updateWorkerLocation } from '../services/workerLocation';
 
 const AvailabilityCard = () => {
   const { isOnline, setIsOnline } = useOnlineStatus();
@@ -21,9 +23,17 @@ const AvailabilityCard = () => {
     try {
       setLoading(true);
 
-      const response = await updateOnlineStatus(newStatus);
+      // When going online, send location first
+      if (newStatus) {
+        const { latitude, longitude } = await getCurrentLocation();
 
-      console.log(response);
+        await updateWorkerLocation(
+          latitude,
+          longitude,
+        );
+      }
+
+      const response = await updateOnlineStatus(newStatus);
 
       if (response.success) {
         setIsOnline(response.data.is_online);
