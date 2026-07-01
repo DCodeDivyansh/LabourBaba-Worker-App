@@ -12,9 +12,11 @@ import BottomNav from '../../components/BottomNav';
 import { getWorkerProfile } from '../../services/workerprofile';
 import { useEffect, useState } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useOnlineStatus } from '../../api/OnlineStatusContext';
 
 export default function WorkerDashboardScreen() {
   const [worker, setWorker] = useState(null);
+  const { isOnline, setIsOnline } = useOnlineStatus();
 
   useEffect(() => {
     loadWorker();
@@ -36,7 +38,7 @@ export default function WorkerDashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <TopNav />
+      <TopNav/>
 
       <ScrollView
         showsVerticalScrollIndicator={false}

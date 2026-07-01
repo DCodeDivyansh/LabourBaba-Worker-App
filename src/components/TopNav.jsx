@@ -4,15 +4,16 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Logo from '../../assets/Logo.svg';
 import Name from '../../assets/LogoName.svg';
 
+import { useOnlineStatus } from '../api/OnlineStatusContext'; // <-- adjust path
+
 const TopAppBar = () => {
+  const { isOnline } = useOnlineStatus();
+
   return (
     <SafeAreaView
       edges={['top']}
@@ -20,11 +21,7 @@ const TopAppBar = () => {
     >
       <View style={styles.container}>
         <View style={styles.logoContainer}>
-          <Logo
-            width={36}
-            height={36}
-          />
-
+          <Logo width={36} height={36} />
           <Name
             width={120}
             height={50}
@@ -32,11 +29,26 @@ const TopAppBar = () => {
           />
         </View>
 
-        <View style={styles.statusContainer}>
-          <View style={styles.dot} />
+        <View
+          style={[
+            styles.statusContainer,
+            !isOnline && styles.statusContainerOffline,
+          ]}
+        >
+          <View
+            style={[
+              styles.dot,
+              !isOnline && styles.dotOffline,
+            ]}
+          />
 
-          <Text style={styles.statusText}>
-            Online
+          <Text
+            style={[
+              styles.statusText,
+              !isOnline && styles.statusTextOffline,
+            ]}
+          >
+            {isOnline ? 'Online' : 'Offline'}
           </Text>
         </View>
       </View>
@@ -51,6 +63,18 @@ export default TopAppBar;
 const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: '#FFFFFF',
+  },
+  statusContainerOffline: {
+    backgroundColor: '#F5F5F5',
+    borderColor: '#888',
+  },
+
+  dotOffline: {
+    backgroundColor: '#888',
+  },
+
+  statusTextOffline: {
+    color: '#666',
   },
 
   container: {

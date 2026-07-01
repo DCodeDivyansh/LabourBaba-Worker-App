@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AppNavigator from './src/navigation/AppNavigator';
+import { OnlineStatusProvider } from './src/api/OnlineStatusContext';
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
@@ -33,8 +34,10 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AppNavigator initialRoute={initialRoute} />
-    </SafeAreaProvider>
+    <OnlineStatusProvider>
+      <SafeAreaProvider>
+        <AppNavigator initialRoute={initialRoute} />
+      </SafeAreaProvider>
+    </OnlineStatusProvider>
   );
 }

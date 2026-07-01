@@ -8,14 +8,15 @@ import {
 
 import AvailabilityIcon from '../../assets/Avaliable.svg';
 import { updateOnlineStatus } from '../services/workerOnline';
+import { useOnlineStatus } from '../api/OnlineStatusContext';
 
 const AvailabilityCard = () => {
-  const [available, setAvailable] = useState(false);
+  const { isOnline, setIsOnline } = useOnlineStatus();
   const [loading, setLoading] = useState(false);
   const handleToggle = async () => {
     if (loading) return;
 
-    const newStatus = !available;
+    const newStatus = !isOnline;
 
     try {
       setLoading(true);
@@ -25,8 +26,7 @@ const AvailabilityCard = () => {
       console.log(response);
 
       if (response.success) {
-        // Use backend response
-        setAvailable(response.data.is_online);
+        setIsOnline(response.data.is_online);
       }
     } catch (error) {
       console.log(error);
@@ -62,7 +62,7 @@ const AvailabilityCard = () => {
         <View
           style={[
             styles.thumb,
-            available && styles.thumbRight,
+            isOnline && styles.thumbRight,
           ]}
         />
       </TouchableOpacity>
