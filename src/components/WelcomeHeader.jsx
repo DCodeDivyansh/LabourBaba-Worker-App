@@ -6,8 +6,9 @@ import {
   Image,
 } from 'react-native';
 
+
 const WelcomeHeader = ({
-  name = 'Vikram',
+  name = 'Worker',
   imageUrl,
 }) => {
   return (
@@ -22,14 +23,12 @@ const WelcomeHeader = ({
         </Text>
       </View>
 
-      <Image
+      {/* <Image
         source={{
-          uri:
-            imageUrl ||
-            'https://i.pravatar.cc/150',
+          uri: imageUrl || 'https://i.pravatar.cc/150',
         }}
         style={styles.avatar}
-      />
+      /> */}
     </View>
   );
 };

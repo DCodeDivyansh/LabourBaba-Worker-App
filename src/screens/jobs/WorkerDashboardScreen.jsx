@@ -9,8 +9,29 @@ import ActiveJobCard from '../../components/ActiveJobCard';
 import PromotionalBannerSlider from '../../components/PromotionalBannerSlider';
 import SafetyBanner from '../../components/SafetyBanner';
 import BottomNav from '../../components/BottomNav';
+import { getWorkerProfile } from '../../services/workerprofile';
+import { useEffect, useState } from 'react';
 
 export default function WorkerDashboardScreen() {
+  const [worker, setWorker] = useState(null);
+
+  useEffect(() => {
+    loadWorker();
+  }, []);
+
+  const loadWorker = async () => {
+    try {
+      const response = await getWorkerProfile();
+      console.log(response);
+      setWorker(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  console.log(getWorkerProfile);
+  console.log(worker);
+  console.log(worker?.name);
+
   return (
     <View style={styles.container}>
       <TopNav />
@@ -19,16 +40,17 @@ export default function WorkerDashboardScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <WelcomeHeader name="" imageUrl="" />
+        <WelcomeHeader
+          name={worker?.name}
+          imageUrl={worker?.image}
+        />
+
         <LocationLine />
         <AvailabilityCard />
         <ActiveJobCard />
         <PromotionalBannerSlider />
         <SafetyBanner />
       </ScrollView>
-
-      <View style={styles.bottomNavContainer}>
-      </View>
     </View>
   );
 }
