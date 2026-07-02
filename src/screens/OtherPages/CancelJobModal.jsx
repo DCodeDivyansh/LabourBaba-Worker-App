@@ -7,20 +7,81 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
-const reasons = [
-  'Personal Emergency',
-  'Location Too Far',
-  'Customer Not Responding',
-  'Found Somewhere Else',
-  'Other Reason',
-];
+// const reasons = [
+//   {
+//     id: 'personalEmergency',
+//     label: t(
+//       'jobs.cancelModal.reasons.personalEmergency',
+//     ),
+//   },
+//   {
+//     id: 'locationTooFar',
+//     label: t(
+//       'jobs.cancelModal.reasons.locationTooFar',
+//     ),
+//   },
+//   {
+//     id: 'customerNotResponding',
+//     label: t(
+//       'jobs.cancelModal.reasons.customerNotResponding',
+//     ),
+//   },
+//   {
+//     id: 'foundSomewhereElse',
+//     label: t(
+//       'jobs.cancelModal.reasons.foundSomewhereElse',
+//     ),
+//   },
+//   {
+//     id: 'otherReason',
+//     label: t(
+//       'jobs.cancelModal.reasons.otherReason',
+//     ),
+//   },
+// ];
 
 const CancelJobModal = ({
   visible,
   onClose,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
+
+  const reasons = [
+    {
+      id: 'personalEmergency',
+      label: t(
+        'jobs.cancelModal.reasons.personalEmergency',
+      ),
+    },
+    {
+      id: 'locationTooFar',
+      label: t(
+        'jobs.cancelModal.reasons.locationTooFar',
+      ),
+    },
+    {
+      id: 'customerNotResponding',
+      label: t(
+        'jobs.cancelModal.reasons.customerNotResponding',
+      ),
+    },
+    {
+      id: 'foundSomewhereElse',
+      label: t(
+        'jobs.cancelModal.reasons.foundSomewhereElse',
+      ),
+    },
+    {
+      id: 'otherReason',
+      label: t(
+        'jobs.cancelModal.reasons.otherReason',
+      ),
+    },
+  ];
+
   const [selectedReason, setSelectedReason] =
     useState(null);
 
@@ -38,7 +99,7 @@ const CancelJobModal = ({
 
           <View style={styles.header}>
             <Text style={styles.title}>
-              Cancel Job
+              {t('jobs.cancelModal.title')}
             </Text>
 
             <TouchableOpacity
@@ -51,8 +112,7 @@ const CancelJobModal = ({
           </View>
 
           <Text style={styles.description}>
-            Please select the primary reason
-            for cancelling this job.
+            {t('jobs.cancelModal.description')}
           </Text>
 
           <ScrollView
@@ -62,34 +122,34 @@ const CancelJobModal = ({
           >
             {reasons.map(reason => (
               <TouchableOpacity
-                key={reason}
+                key={reason.id}
                 style={styles.option}
                 onPress={() =>
-                  setSelectedReason(reason)
+                  setSelectedReason(reason.id)
                 }
               >
                 <Text
                   style={styles.optionText}
                 >
-                  {reason}
+                  {reason.label}
                 </Text>
 
                 <View
                   style={[
                     styles.radioOuter,
                     selectedReason ===
-                      reason &&
-                      styles.radioOuterSelected,
+                    reason.id &&
+                    styles.radioOuterSelected,
                   ]}
                 >
                   {selectedReason ===
-                    reason && (
-                    <View
-                      style={
-                        styles.radioInner
-                      }
-                    />
-                  )}
+                    reason.id && (
+                      <View
+                        style={
+                          styles.radioInner
+                        }
+                      />
+                    )}
                 </View>
               </TouchableOpacity>
             ))}
@@ -97,9 +157,7 @@ const CancelJobModal = ({
 
           <View style={styles.warningBox}>
             <Text style={styles.warningText}>
-              ⚠️ Frequent cancellations
-              may affect your worker
-              rating and visibility.
+              ⚠️ {t('jobs.cancelModal.warning')}
             </Text>
           </View>
 
@@ -116,7 +174,7 @@ const CancelJobModal = ({
             }
           >
             <Text style={styles.confirmText}>
-              Confirm Cancellation
+              {t('jobs.cancelModal.confirmButton')}
             </Text>
           </TouchableOpacity>
 
@@ -125,7 +183,7 @@ const CancelJobModal = ({
             onPress={onClose}
           >
             <Text style={styles.backText}>
-              Go Back
+              {t('jobs.cancelModal.goBack')}
             </Text>
           </TouchableOpacity>
         </View>
