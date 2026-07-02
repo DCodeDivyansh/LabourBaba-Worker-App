@@ -1,0 +1,272 @@
+{
+  "common": {
+    "appName": "LabourBaba",
+    "tagline": "Find   Book   Build",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "goBack": "Go Back",
+    "save": "Save",
+    "yes": "Yes",
+    "no": "No",
+    "show": "Show",
+    "hide": "Hide",
+    "loading": "Loading...",
+    "somethingWentWrong": "Something went wrong",
+    "error": "Error"
+  },
+
+  "navigation": {
+    "home": "Home",
+    "jobs": "Jobs",
+    "alerts": "Alerts",
+    "profile": "Profile"
+  },
+
+  "auth": {
+    "header": {
+      "brandName": "LabourBaba",
+      "tagline": "Find Book Build"
+    },
+    "languageToggle": {
+      "english": "English",
+      "hindi": "हिंदी"
+    },
+    "login": {
+      "mobileLabel": "Mobile Number",
+      "mobilePlaceholder": "Enter your 10-digit number",
+      "countryCode": "+91",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "show": "Show",
+      "hide": "Hide",
+      "loginButton": "Login",
+      "orContinueWith": "OR CONTINUE WITH",
+      "googleSignIn": "Google Sign In",
+      "loginFailedTitle": "Login Failed",
+      "errorTitle": "Error",
+      "genericError": "Something went wrong"
+    },
+    "footer": {
+      "newToApp": "New to LabourBaba?",
+      "createAccount": "Create Account"
+    },
+    "otp": {
+      "screenTitle": "Verification",
+      "heading": "Verify Your Number",
+      "description": "We have sent a 6-digit code to",
+      "resendPrompt": "Didn't receive the code?",
+      "resendTimer": "Resend in {{time}}",
+      "verifyButton": "Verify & Proceed →",
+      "termsText": "By continuing, you agree to our Terms of Service and Privacy Policy."
+    },
+    "createProfile": {
+      "screenTitle": "Create Profile",
+      "completeRegistration": "Complete Registration",
+      "verifyIdentity": {
+        "title": "Verify Your Identity",
+        "subtitle": "Join the network of trusted professionals."
+      },
+      "personalDetails": {
+        "title": "Personal Details",
+        "uploadPhoto": "Upload clear face photo",
+        "fullNameLabel": "Full Name (As per Aadhaar)",
+        "fullNamePlaceholder": "Enter Your Name",
+        "mobileLabel": "Mobile Number",
+        "mobilePlaceholder": "Enter mobile number",
+        "aadhaarLabel": "Aadhaar Number",
+        "aadhaarPlaceholder": "XXXX XXXX XXXX"
+      },
+      "location": {
+        "title": "Location Base",
+        "autoDetect": "Auto-Detect Current Location",
+        "addressLabel": "Current Address / Work Area",
+        "addressPlaceholder": "Enter building, street, and locality..."
+      },
+      "tradeExperience": {
+        "title": "Trade & Experience",
+        "skillLabel": "Select your primary skill",
+        "skills": {
+          "mason": "Mason",
+          "labour": "Labour"
+        },
+        "experienceLabel": "Years of Experience",
+        "experiencePlaceholder": "Select experience...",
+        "wageLabel": "Expected Daily Wage (₹)",
+        "minWagePlaceholder": "Min ₹",
+        "maxWagePlaceholder": "Max ₹"
+      },
+      "password": {
+        "title": "Password",
+        "createLabel": "Create a secure password",
+        "placeholder": "Enter password",
+        "helperText": "Use at least 6 characters for a stronger password."
+      }
+    },
+    "splash": {
+      "version": "Version {{version}}"
+    }
+  },
+
+  "dashboard": {
+    "topNav": {
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "welcome": {
+      "defaultName": "Worker",
+      "greeting": "Hello, {{name}}",
+      "subtitle": "Ready for work today?"
+    },
+    "location": {
+      "currentLocation": "Current Location:",
+      "fetching": "Fetching location..."
+    },
+    "availability": {
+      "goingOnline": "Going online...",
+      "availableNow": "Available Now",
+      "subtitle": "You are visible to nearby customers"
+    },
+    "activeJob": {
+      "sectionTitle": "Up Next",
+      "perDay": "/ Day",
+      "viewDetails": "View Details"
+    },
+    "banners": {
+      "offer": {
+        "tag": "NEW USER OFFER",
+        "title": "50% Off First Job",
+        "subtitle": "Use code: WELCOME50"
+      },
+      "safety": {
+        "tag": "SAFETY",
+        "title": "Verified Workers",
+        "subtitle": "100% background checked"
+      },
+      "bonus": {
+        "tag": "BONUS",
+        "title": "Earn ₹500 Extra",
+        "subtitle": "Complete 5 jobs this week"
+      }
+    },
+    "safetyBanner": {
+      "title": "100% Secure Service",
+      "subtitle": "Background verified professionals"
+    }
+  },
+
+  "jobs": {
+    "myJobsList": {
+      "heading": "My Jobs",
+      "subHeading": "Manage your accepted and upcoming tasks.",
+      "tabs": {
+        "today": "Today",
+        "upcoming": "Upcoming",
+        "allHistory": "All History"
+      },
+      "clientSuffix": "Client",
+      "details": "Details",
+      "status": {
+        "upcoming": "Upcoming"
+      }
+    },
+    "jobDetails": {
+      "screenTitle": "Job Details",
+      "jobAccepted": "Job Accepted",
+      "jobIdLabel": "ID: #{{id}}",
+      "serviceSeeker": "Service Seeker",
+      "reviewsSuffix": "Reviews",
+      "schedule": "SCHEDULE",
+      "budget": "BUDGET",
+      "cashOnCompletion": "Cash on Completion",
+      "serviceAddress": "Service Address",
+      "navigate": "Navigate",
+      "callCustomer": "Call Customer",
+      "cancelJob": "Cancel Job",
+      "jobCompleted": "Job Completed"
+    },
+    "cancelModal": {
+      "title": "Cancel Job",
+      "description": "Please select the primary reason for cancelling this job.",
+      "reasons": {
+        "personalEmergency": "Personal Emergency",
+        "locationTooFar": "Location Too Far",
+        "customerNotResponding": "Customer Not Responding",
+        "foundSomewhereElse": "Found Somewhere Else",
+        "otherReason": "Other Reason"
+      },
+      "warning": "⚠️ Frequent cancellations may affect your worker rating and visibility.",
+      "confirmButton": "Confirm Cancellation",
+      "goBack": "Go Back"
+    }
+  },
+
+  "alerts": {
+    "heading": "Recent Alerts",
+    "markAllRead": "Mark all read",
+    "items": {
+      "newJobRequest": {
+        "title": "New Job Request: Plumbing"
+      },
+      "offerAccepted": {
+        "title": "Offer Accepted"
+      },
+      "cancellationUpdate": {
+        "title": "Cancellation Update"
+      },
+      "systemMaintenance": {
+        "title": "System Maintenance"
+      }
+    },
+    "time": {
+      "minutesAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "yesterday": "Yesterday"
+    }
+  },
+
+  "profile": {
+    "content": {
+      "settingsHeading": "Settings",
+      "settingsDescription": "Manage your account preferences and app settings.",
+      "languageSelection": "Language Selection",
+      "defaultLanguage": "English (US)",
+      "notificationSettings": "Notification Settings",
+      "helpSupport": "Help & Support",
+      "privacyPolicy": "Privacy Policy",
+      "logout": "Logout",
+      "logoutConfirmTitle": "Logout",
+      "logoutConfirmMessage": "Are you sure you want to logout?"
+    },
+    "language": {
+      "screenTitle": "Language",
+      "chooseLanguage": "Choose Language",
+      "subtitle": "Select your preferred language to continue using LabourBaba.",
+      "options": {
+        "english": {
+          "name": "English (US)",
+          "subtitle": "Default System Language"
+        },
+        "hindi": {
+          "name": "Hindi (हिन्दी)"
+        }
+      }
+    },
+    "help": {
+      "screenTitle": "Help & Support",
+      "faqTitle": "Frequently Asked Questions",
+      "booking": "Booking",
+      "payments": "Payments",
+      "account": "Account",
+      "needMoreHelp": "Need More Help?",
+      "callUs": "Call Us",
+      "callAvailability": "Available 24/7",
+      "emailSupport": "Email Support",
+      "emailResponseTime": "Respond within 24 hours"
+    },
+    "review": {
+      "screenTitle": "Reviews Given",
+      "title": "Your Feedback History",
+      "description": "Here are the reviews you've left for workers. Your feedback helps maintain our high-quality community."
+    }
+  }
+}

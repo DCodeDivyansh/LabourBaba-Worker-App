@@ -1,0 +1,272 @@
+{
+  "common": {
+    "appName": "LabourBaba",
+    "tagline": "खोजें   बुक करें   बनाएं",
+    "cancel": "रद्द करें",
+    "confirm": "पुष्टि करें",
+    "goBack": "वापस जाएं",
+    "save": "सहेजें",
+    "yes": "हां",
+    "no": "नहीं",
+    "show": "दिखाएं",
+    "hide": "छिपाएं",
+    "loading": "लोड हो रहा है...",
+    "somethingWentWrong": "कुछ गलत हो गया",
+    "error": "त्रुटि"
+  },
+
+  "navigation": {
+    "home": "होम",
+    "jobs": "काम",
+    "alerts": "सूचनाएं",
+    "profile": "प्रोफ़ाइल"
+  },
+
+  "auth": {
+    "header": {
+      "brandName": "LabourBaba",
+      "tagline": "खोजें बुक करें बनाएं"
+    },
+    "languageToggle": {
+      "english": "English",
+      "hindi": "हिंदी"
+    },
+    "login": {
+      "mobileLabel": "मोबाइल नंबर",
+      "mobilePlaceholder": "अपना 10 अंकों का नंबर दर्ज करें",
+      "countryCode": "+91",
+      "passwordLabel": "पासवर्ड",
+      "passwordPlaceholder": "अपना पासवर्ड दर्ज करें",
+      "show": "दिखाएं",
+      "hide": "छिपाएं",
+      "loginButton": "लॉगिन करें",
+      "orContinueWith": "या इसके साथ जारी रखें",
+      "googleSignIn": "Google से साइन इन करें",
+      "loginFailedTitle": "लॉगिन विफल",
+      "errorTitle": "त्रुटि",
+      "genericError": "कुछ गलत हो गया"
+    },
+    "footer": {
+      "newToApp": "LabourBaba पर नए हैं?",
+      "createAccount": "खाता बनाएं"
+    },
+    "otp": {
+      "screenTitle": "सत्यापन",
+      "heading": "अपना नंबर सत्यापित करें",
+      "description": "हमने आपके नंबर पर 6 अंकों का कोड भेजा है",
+      "resendPrompt": "कोड नहीं मिला?",
+      "resendTimer": "{{time}} में दोबारा भेजें",
+      "verifyButton": "सत्यापित करें और आगे बढ़ें →",
+      "termsText": "जारी रखकर, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं।"
+    },
+    "createProfile": {
+      "screenTitle": "प्रोफ़ाइल बनाएं",
+      "completeRegistration": "पंजीकरण पूरा करें",
+      "verifyIdentity": {
+        "title": "अपनी पहचान सत्यापित करें",
+        "subtitle": "विश्वसनीय पेशेवरों के नेटवर्क से जुड़ें।"
+      },
+      "personalDetails": {
+        "title": "व्यक्तिगत विवरण",
+        "uploadPhoto": "स्पष्ट चेहरे की फोटो अपलोड करें",
+        "fullNameLabel": "पूरा नाम (आधार के अनुसार)",
+        "fullNamePlaceholder": "अपना नाम दर्ज करें",
+        "mobileLabel": "मोबाइल नंबर",
+        "mobilePlaceholder": "मोबाइल नंबर दर्ज करें",
+        "aadhaarLabel": "आधार नंबर",
+        "aadhaarPlaceholder": "XXXX XXXX XXXX"
+      },
+      "location": {
+        "title": "स्थान आधार",
+        "autoDetect": "वर्तमान स्थान स्वतः पहचानें",
+        "addressLabel": "वर्तमान पता / कार्य क्षेत्र",
+        "addressPlaceholder": "इमारत, सड़क और इलाका दर्ज करें..."
+      },
+      "tradeExperience": {
+        "title": "व्यवसाय और अनुभव",
+        "skillLabel": "अपना मुख्य कौशल चुनें",
+        "skills": {
+          "mason": "राजमिस्त्री",
+          "labour": "मजदूर"
+        },
+        "experienceLabel": "अनुभव के वर्ष",
+        "experiencePlaceholder": "अनुभव चुनें...",
+        "wageLabel": "अपेक्षित दैनिक मजदूरी (₹)",
+        "minWagePlaceholder": "न्यूनतम ₹",
+        "maxWagePlaceholder": "अधिकतम ₹"
+      },
+      "password": {
+        "title": "पासवर्ड",
+        "createLabel": "एक सुरक्षित पासवर्ड बनाएं",
+        "placeholder": "पासवर्ड दर्ज करें",
+        "helperText": "मजबूत पासवर्ड के लिए कम से कम 6 अक्षरों का उपयोग करें।"
+      }
+    },
+    "splash": {
+      "version": "संस्करण {{version}}"
+    }
+  },
+
+  "dashboard": {
+    "topNav": {
+      "online": "ऑनलाइन",
+      "offline": "ऑफ़लाइन"
+    },
+    "welcome": {
+      "defaultName": "वर्कर",
+      "greeting": "नमस्ते, {{name}}",
+      "subtitle": "क्या आज काम के लिए तैयार हैं?"
+    },
+    "location": {
+      "currentLocation": "वर्तमान स्थान:",
+      "fetching": "स्थान प्राप्त किया जा रहा है..."
+    },
+    "availability": {
+      "goingOnline": "ऑनलाइन हो रहे हैं...",
+      "availableNow": "अभी उपलब्ध हैं",
+      "subtitle": "आप आस-पास के ग्राहकों को दिखाई दे रहे हैं"
+    },
+    "activeJob": {
+      "sectionTitle": "अगला काम",
+      "perDay": "/ दिन",
+      "viewDetails": "विवरण देखें"
+    },
+    "banners": {
+      "offer": {
+        "tag": "नए उपयोगकर्ता ऑफ़र",
+        "title": "पहले काम पर 50% छूट",
+        "subtitle": "कोड इस्तेमाल करें: WELCOME50"
+      },
+      "safety": {
+        "tag": "सुरक्षा",
+        "title": "सत्यापित वर्कर्स",
+        "subtitle": "100% पृष्ठभूमि जांचे गए"
+      },
+      "bonus": {
+        "tag": "बोनस",
+        "title": "₹500 अतिरिक्त कमाएं",
+        "subtitle": "इस सप्ताह 5 काम पूरे करें"
+      }
+    },
+    "safetyBanner": {
+      "title": "100% सुरक्षित सेवा",
+      "subtitle": "पृष्ठभूमि सत्यापित पेशेवर"
+    }
+  },
+
+  "jobs": {
+    "myJobsList": {
+      "heading": "मेरे काम",
+      "subHeading": "अपने स्वीकृत और आगामी कामों को प्रबंधित करें।",
+      "tabs": {
+        "today": "आज",
+        "upcoming": "आगामी",
+        "allHistory": "पूरा इतिहास"
+      },
+      "clientSuffix": "ग्राहक",
+      "details": "विवरण",
+      "status": {
+        "upcoming": "आगामी"
+      }
+    },
+    "jobDetails": {
+      "screenTitle": "काम का विवरण",
+      "jobAccepted": "काम स्वीकृत",
+      "jobIdLabel": "आईडी: #{{id}}",
+      "serviceSeeker": "सेवा चाहने वाला",
+      "reviewsSuffix": "समीक्षाएं",
+      "schedule": "समय-सारणी",
+      "budget": "बजट",
+      "cashOnCompletion": "पूरा होने पर नकद भुगतान",
+      "serviceAddress": "सेवा का पता",
+      "navigate": "नेविगेट करें",
+      "callCustomer": "ग्राहक को कॉल करें",
+      "cancelJob": "काम रद्द करें",
+      "jobCompleted": "काम पूरा हुआ"
+    },
+    "cancelModal": {
+      "title": "काम रद्द करें",
+      "description": "कृपया इस काम को रद्द करने का मुख्य कारण चुनें।",
+      "reasons": {
+        "personalEmergency": "व्यक्तिगत आपातकाल",
+        "locationTooFar": "स्थान बहुत दूर है",
+        "customerNotResponding": "ग्राहक जवाब नहीं दे रहा",
+        "foundSomewhereElse": "कहीं और काम मिल गया",
+        "otherReason": "अन्य कारण"
+      },
+      "warning": "⚠️ बार-बार रद्द करने से आपकी वर्कर रेटिंग और दृश्यता प्रभावित हो सकती है।",
+      "confirmButton": "रद्दीकरण की पुष्टि करें",
+      "goBack": "वापस जाएं"
+    }
+  },
+
+  "alerts": {
+    "heading": "हाल की सूचनाएं",
+    "markAllRead": "सभी को पढ़ा हुआ चिह्नित करें",
+    "items": {
+      "newJobRequest": {
+        "title": "नया काम अनुरोध: प्लंबिंग"
+      },
+      "offerAccepted": {
+        "title": "ऑफ़र स्वीकृत"
+      },
+      "cancellationUpdate": {
+        "title": "रद्दीकरण अपडेट"
+      },
+      "systemMaintenance": {
+        "title": "सिस्टम रखरखाव"
+      }
+    },
+    "time": {
+      "minutesAgo": "{{count}} मिनट पहले",
+      "hoursAgo": "{{count}} घंटे पहले",
+      "yesterday": "कल"
+    }
+  },
+
+  "profile": {
+    "content": {
+      "settingsHeading": "सेटिंग्स",
+      "settingsDescription": "अपनी खाता प्राथमिकताओं और ऐप सेटिंग्स को प्रबंधित करें।",
+      "languageSelection": "भाषा चयन",
+      "defaultLanguage": "अंग्रेज़ी (US)",
+      "notificationSettings": "सूचना सेटिंग्स",
+      "helpSupport": "सहायता और समर्थन",
+      "privacyPolicy": "गोपनीयता नीति",
+      "logout": "लॉगआउट",
+      "logoutConfirmTitle": "लॉगआउट",
+      "logoutConfirmMessage": "क्या आप वाकई लॉगआउट करना चाहते हैं?"
+    },
+    "language": {
+      "screenTitle": "भाषा",
+      "chooseLanguage": "भाषा चुनें",
+      "subtitle": "LabourBaba का उपयोग जारी रखने के लिए अपनी पसंदीदा भाषा चुनें।",
+      "options": {
+        "english": {
+          "name": "अंग्रेज़ी (US)",
+          "subtitle": "डिफ़ॉल्ट सिस्टम भाषा"
+        },
+        "hindi": {
+          "name": "हिंदी (हिन्दी)"
+        }
+      }
+    },
+    "help": {
+      "screenTitle": "सहायता और समर्थन",
+      "faqTitle": "अक्सर पूछे जाने वाले प्रश्न",
+      "booking": "बुकिंग",
+      "payments": "भुगतान",
+      "account": "खाता",
+      "needMoreHelp": "अधिक सहायता चाहिए?",
+      "callUs": "हमें कॉल करें",
+      "callAvailability": "24/7 उपलब्ध",
+      "emailSupport": "ईमेल सहायता",
+      "emailResponseTime": "24 घंटे के भीतर जवाब"
+    },
+    "review": {
+      "screenTitle": "दी गई समीक्षाएं",
+      "title": "आपका फीडबैक इतिहास",
+      "description": "यहां वे समीक्षाएं हैं जो आपने वर्कर्स के लिए दी हैं। आपका फीडबैक हमारे उच्च-गुणवत्ता वाले समुदाय को बनाए रखने में मदद करता है।"
+    }
+  }
+}
