@@ -14,6 +14,8 @@ import LogoutIcon from '../../assets/LogOut.svg'
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import i18n from '../translations/i18n'; // adjust path if needed
 
 const SettingItem = ({
     icon,
@@ -55,20 +57,22 @@ const SettingItem = ({
     );
 };
 
-export default function ProfileContent({name = 'Worker',
-  imageUrl, phone}) {
+export default function ProfileContent({ name = 'Worker',
+    imageUrl, phone }) {
+
+    const { t } = useTranslation();
 
     const handleLogout = () => {
         Alert.alert(
-            'Logout',
-            'Are you sure you want to logout?',
+            t('profile.content.logoutConfirmTitle'),
+            t('profile.content.logoutConfirmMessage'),
             [
                 {
-                    text: 'Cancel',
+                    text: t('common.cancel'),
                     style: 'cancel',
                 },
                 {
-                    text: 'Logout',
+                    text: t('profile.content.logout'),
                     style: 'destructive',
                     onPress: async () => {
                         try {
@@ -135,12 +139,11 @@ export default function ProfileContent({name = 'Worker',
             {/* Heading */}
 
             <Text style={styles.heading}>
-                Settings
+                {t('profile.content.settingsHeading')}
             </Text>
 
             <Text style={styles.description}>
-                Manage your account preferences and
-                app settings.
+                {t('profile.content.settingsDescription')}
             </Text>
 
             {/* Settings Card 1 */}
@@ -148,13 +151,17 @@ export default function ProfileContent({name = 'Worker',
             <View style={styles.settingsCard}>
                 <SettingItem
                     icon={<LanguageIcon width={22} height={22} />}
-                    title="Language Selection"
-                    subtitle="English (US)"
+                    title={t('profile.content.languageSelection')}
+                    subtitle={
+                        i18n.language === 'hi'
+                            ? t('profile.language.options.hindi.name')
+                            : t('profile.language.options.english.name')
+                    }
                     onPress={MoveToLanguagePage}
                 />
                 <SettingItem
                     icon={<NotificationIcon width={22} height={22} />}
-                    title="Notification Settings"
+                    title={t('profile.content.notificationSettings')}
                     showDivider={false}
                 />
             </View>
@@ -164,13 +171,13 @@ export default function ProfileContent({name = 'Worker',
             <View style={styles.settingsCard}>
                 <SettingItem
                     icon={<HelpAndSupportIcon width={22} height={22} />}
-                    title="Help & Support"
+                    title={t('profile.content.helpSupport')}
                     onPress={MoveToHelpPage}
                 />
 
                 <SettingItem
                     icon={<PrivacyPolicyIcon width={22} height={22} />}
-                    title="Privacy Policy"
+                    title={t('profile.content.privacyPolicy')}
                     showDivider={false}
                 />
             </View>
@@ -181,8 +188,10 @@ export default function ProfileContent({name = 'Worker',
                 style={styles.logoutButton}
                 onPress={handleLogout}
             >
+                <LogoutIcon />
+
                 <Text style={styles.logoutText}>
-                    <LogoutIcon />  Logout
+                    {t('profile.content.logout')}
                 </Text>
             </TouchableOpacity>
         </ScrollView>
@@ -348,8 +357,11 @@ const styles = StyleSheet.create({
 
         borderRadius: 14,
 
-        justifyContent: 'center',
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+
+        gap: 8,
     },
 
     logoutText: {
