@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import i18n from '../translations/i18n';
 
 const alerts = [
   {
@@ -43,6 +45,7 @@ const alerts = [
 ];
 
 const AlertCard = ({ item }) => {
+  
   const getStyles = () => {
     switch (item.type) {
       case 'job':
@@ -84,6 +87,7 @@ const AlertCard = ({ item }) => {
   };
 
   const config = getStyles();
+  
 
   return (
     <TouchableOpacity
@@ -130,6 +134,7 @@ const AlertCard = ({ item }) => {
 };
 
 export default function RecentAlerts() {
+  const { t } = useTranslation();
   return (
     <ScrollView
       style={styles.container}
@@ -137,12 +142,12 @@ export default function RecentAlerts() {
     >
       <View style={styles.topRow}>
         <Text style={styles.heading}>
-          Recent Alerts
+          {t('alerts.heading')}
         </Text>
 
         <TouchableOpacity>
           <Text style={styles.markRead}>
-            Mark all read
+            {t('alerts.markAllRead')}
           </Text>
         </TouchableOpacity>
       </View>
