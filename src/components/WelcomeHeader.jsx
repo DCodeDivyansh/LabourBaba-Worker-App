@@ -3,32 +3,28 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
 } from 'react-native';
 
+import { useTranslation } from 'react-i18next';
 
 const WelcomeHeader = ({
-  name = 'Worker',
-  imageUrl,
+  name,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
       <View>
         <Text style={styles.greeting}>
-          Hello, {name}
+          {t('dashboard.welcome.greeting', {
+            name: name || t('dashboard.welcome.defaultName'),
+          })}
         </Text>
 
         <Text style={styles.subtitle}>
-          Ready for work today?
+          {t('dashboard.welcome.subtitle')}
         </Text>
       </View>
-
-      {/* <Image
-        source={{
-          uri: imageUrl || 'https://i.pravatar.cc/150',
-        }}
-        style={styles.avatar}
-      /> */}
     </View>
   );
 };

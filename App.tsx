@@ -3,6 +3,7 @@ import BootSplash from 'react-native-bootsplash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Geocoder from 'react-native-geocoding';
+import './src/translations/i18n';
 
 Geocoder.init("YOUR_GOOGLE_MAPS_API_KEY");
 

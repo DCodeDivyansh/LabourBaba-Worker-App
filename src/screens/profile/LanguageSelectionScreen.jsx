@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,45 +6,85 @@ import {
   StyleSheet,
 } from 'react-native';
 import TopAppBar from '../../components/TopAppBar';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../translations/i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const languages = [
   {
-    id: 1,
+    code: 'en',
     name: 'English (US)',
     subtitle: 'Default System Language',
     icon: '🌐',
   },
   {
-    id: 2,
+    code: 'hi',
     name: 'Hindi (हिन्दी)',
     icon: '文A',
   },
 ];
 
+
 const LanguageSelectionScreen = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState(1);
+  const { t } = useTranslation();
+
+  const [selectedLanguage, setSelectedLanguage] =
+    useState(i18n.language);
+
+  const changeLanguage = async language => {
+    try {
+      await i18n.changeLanguage(language);
+
+      await AsyncStorage.setItem(
+        'language',
+        language,
+      );
+
+      setSelectedLanguage(language);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+
+  useEffect(() => {
+    const loadLanguage = async () => {
+      const language =
+        await AsyncStorage.getItem('language');
+
+      if (language) {
+        await i18n.changeLanguage(language);
+        setSelectedLanguage(language);
+      }
+    };
+
+    loadLanguage();
+  }, []);
 
   return (
     <View style={styles.container}>
-        <TopAppBar title="Language"/>
+      <TopAppBar
+        title={t('profile.language.screenTitle')}
+      />
 
-      <Text style={styles.title}>Choose Language</Text>
+      <Text style={styles.title}>
+        {t('profile.language.chooseLanguage')}
+      </Text>
 
       <Text style={styles.subtitle}>
-        Select your preferred language to continue
-        using LabourBaba.
+        {t('profile.language.subtitle')}
       </Text>
 
       <View style={styles.listContainer}>
         {languages.map(item => (
           <TouchableOpacity
-            key={item.id}
+            key={item.code}
             activeOpacity={0.8}
-            onPress={() => setSelectedLanguage(item.id)}
+            onPress={() => changeLanguage(item.code)}
             style={[
               styles.languageCard,
-              selectedLanguage === item.id &&
-                styles.selectedLanguageCard,
+              selectedLanguage === item.code &&
+              styles.selectedLanguageCard,
             ]}
           >
             <View style={styles.leftSection}>
@@ -56,12 +96,16 @@ const LanguageSelectionScreen = () => {
 
               <View>
                 <Text style={styles.languageName}>
-                  {item.name}
+                  {item.code === 'en'
+                    ? t('profile.language.options.english.name')
+                    : t('profile.language.options.hindi.name')}
                 </Text>
 
-                {item.subtitle && (
+                {item.code === 'en' && (
                   <Text style={styles.languageSubtitle}>
-                    {item.subtitle}
+                    {t(
+                      'profile.language.options.english.subtitle',
+                    )}
                   </Text>
                 )}
               </View>
@@ -70,11 +114,11 @@ const LanguageSelectionScreen = () => {
             <View
               style={[
                 styles.radioOuter,
-                selectedLanguage === item.id &&
-                  styles.radioOuterSelected,
+                selectedLanguage === item.code &&
+                styles.radioOuterSelected,
               ]}
             >
-              {selectedLanguage === item.id && (
+              {selectedLanguage === item.code && (
                 <View style={styles.radioInner} />
               )}
             </View>

@@ -47,7 +47,6 @@ export default function WorkerDashboardScreen() {
       >
         <WelcomeHeader
           name={worker?.name}
-          imageUrl={worker?.image}
         />
 
         <LocationLine location={address} />
