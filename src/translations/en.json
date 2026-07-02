@@ -14,14 +14,12 @@
     "somethingWentWrong": "Something went wrong",
     "error": "Error"
   },
-
   "navigation": {
     "home": "Home",
     "jobs": "Jobs",
     "alerts": "Alerts",
     "profile": "Profile"
   },
-
   "auth": {
     "header": {
       "brandName": "LabourBaba",
@@ -106,7 +104,6 @@
       "version": "Version {{version}}"
     }
   },
-
   "dashboard": {
     "topNav": {
       "online": "Online",
@@ -153,7 +150,6 @@
       "subtitle": "Background verified professionals"
     }
   },
-
   "jobs": {
     "myJobsList": {
       "heading": "My Jobs",
@@ -199,7 +195,6 @@
       "goBack": "Go Back"
     }
   },
-
   "alerts": {
     "heading": "Recent Alerts",
     "markAllRead": "Mark all read",
@@ -223,7 +218,6 @@
       "yesterday": "Yesterday"
     }
   },
-
   "profile": {
     "content": {
       "settingsHeading": "Settings",
@@ -254,14 +248,61 @@
     "help": {
       "screenTitle": "Help & Support",
       "faqTitle": "Frequently Asked Questions",
-      "booking": "Booking",
-      "payments": "Payments",
-      "account": "Account",
+      "faqSubtitle": "Browse a category to find quick answers.",
+      "categories": {
+        "booking": "Booking",
+        "payments": "Payments",
+        "account": "Account"
+      },
+      "faqs": {
+        "b1": {
+          "question": "How do I accept a new job?",
+          "answer": "Toggle \"Available Now\" to go online. When a customer sends a job request, you'll get a notification — open it and tap Accept to confirm the booking."
+        },
+        "b2": {
+          "question": "Can I decline a job I don't want?",
+          "answer": "Yes, you're free to decline any job request. Keep in mind that frequent cancellations may affect your worker rating and how often you're shown to customers."
+        },
+        "b3": {
+          "question": "How do I mark a job as completed?",
+          "answer": "Open the job from My Jobs, go to Job Details, and tap \"Job Completed\" once you've finished the work at the customer's location."
+        },
+        "p1": {
+          "question": "When do I get paid?",
+          "answer": "Most jobs are Cash on Completion — the customer pays you directly once the work is done. Digital payment options will show up on the job details screen when available."
+        },
+        "p2": {
+          "question": "Is there a service fee?",
+          "answer": "LabourBaba deducts a small commission from completed jobs paid through the app. There's no fee for cash jobs paid directly by the customer."
+        },
+        "p3": {
+          "question": "What if a customer doesn't pay?",
+          "answer": "Contact our support team using the options below with the job ID. We'll look into it and help you resolve the issue as quickly as possible."
+        },
+        "a1": {
+          "question": "How do I update my profile details?",
+          "answer": "Go to Profile, tap the edit icon on your photo, and update your name, skill, or other personal details from there."
+        },
+        "a2": {
+          "question": "How can I change my app language?",
+          "answer": "Go to Profile > Language Selection and choose English or Hindi as your preferred language."
+        },
+        "a3": {
+          "question": "How do I reset my password?",
+          "answer": "Contact our support team using Call Us or Email Support below and we'll help you securely reset your password."
+        }
+      },
       "needMoreHelp": "Need More Help?",
+      "needMoreHelpSubtitle": "Our support team is just a tap away.",
       "callUs": "Call Us",
       "callAvailability": "Available 24/7",
       "emailSupport": "Email Support",
-      "emailResponseTime": "Respond within 24 hours"
+      "emailResponseTime": "Respond within 24 hours",
+      "emailSubject": "LabourBaba Support Request",
+      "callErrorTitle": "Unable to place call",
+      "callErrorMessage": "Please dial {{phone}} manually.",
+      "emailErrorTitle": "Unable to open email",
+      "emailErrorMessage": "Please email us at {{email}}."
     },
     "review": {
       "screenTitle": "Reviews Given",
