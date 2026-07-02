@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import BootSplash from 'react-native-bootsplash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Geocoder from 'react-native-geocoding';
+
+Geocoder.init("YOUR_GOOGLE_MAPS_API_KEY");
 
 import AppNavigator from './src/navigation/AppNavigator';
 import { OnlineStatusProvider } from './src/api/OnlineStatusContext';

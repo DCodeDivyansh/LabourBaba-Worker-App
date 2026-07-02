@@ -17,6 +17,7 @@ import { useOnlineStatus } from '../../api/OnlineStatusContext';
 export default function WorkerDashboardScreen() {
   const [worker, setWorker] = useState(null);
   const { isOnline, setIsOnline } = useOnlineStatus();
+  const [address, setAddress] = useState('');
 
   useEffect(() => {
     loadWorker();
@@ -49,8 +50,8 @@ export default function WorkerDashboardScreen() {
           imageUrl={worker?.image}
         />
 
-        <LocationLine />
-        <AvailabilityCard />
+        <LocationLine location={address} />
+        <AvailabilityCard setAddress={setAddress} />
         <ActiveJobCard />
         <PromotionalBannerSlider />
         <SafetyBanner />

@@ -12,8 +12,13 @@ import { updateOnlineStatus } from '../services/workerOnline';
 import { useOnlineStatus } from '../api/OnlineStatusContext';
 import { getCurrentLocation } from '../services/location';
 import { updateWorkerLocation } from '../services/workerLocation';
+import { getAddressFromCoordinates } from '../services/reverseGeocode';
 
-const AvailabilityCard = () => {
+interface Props {
+  setAddress: (address: string) => void;
+}
+
+const AvailabilityCard = ({ setAddress }: Props) => {
   const { isOnline, setIsOnline } = useOnlineStatus();
   const [loading, setLoading] = useState(false);
   const handleToggle = async () => {
@@ -24,17 +29,28 @@ const AvailabilityCard = () => {
     try {
       setLoading(true);
 
-      // When going online, send location first
       if (newStatus) {
-        const { latitude, longitude } = await getCurrentLocation();
+        const { latitude, longitude } =
+          await getCurrentLocation();
 
+        // Send location to backend
         await updateWorkerLocation(
           latitude,
           longitude,
         );
+
+        // Get readable address
+        const currentAddress =
+          await getAddressFromCoordinates(
+            latitude,
+            longitude,
+          );
+
+        setAddress(currentAddress);
       }
 
-      const response = await updateOnlineStatus(newStatus);
+      const response =
+        await updateOnlineStatus(newStatus);
 
       if (response.success) {
         setIsOnline(response.data.is_online);
