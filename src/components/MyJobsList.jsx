@@ -8,6 +8,8 @@ import {
   Dimensions,
 } from 'react-native';
 
+import { useTranslation } from 'react-i18next';
+
 const { width, height } = Dimensions.get('window');
 
 const jobsData = [
@@ -44,7 +46,24 @@ const jobsData = [
 ];
 
 const MyJobsList = () => {
+
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('All History');
+
+  const tabs = [
+    {
+      key: 'today',
+      label: t('jobs.myJobsList.tabs.today'),
+    },
+    {
+      key: 'upcoming',
+      label: t('jobs.myJobsList.tabs.upcoming'),
+    },
+    {
+      key: 'allHistory',
+      label: t('jobs.myJobsList.tabs.allHistory'),
+    },
+  ];
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
@@ -84,30 +103,31 @@ const MyJobsList = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>My Jobs</Text>
+      <Text style={styles.heading}>{t('jobs.myJobsList.heading')}</Text>
 
       <Text style={styles.subHeading}>
-        Manage your accepted and upcoming tasks.
+        {t('jobs.myJobsList.subHeading')}
       </Text>
 
       <View style={styles.tabs}>
-        {['Today', 'Upcoming', 'All History'].map(tab => (
+        {tabs.map(tab => (
           <TouchableOpacity
-            key={tab}
-            onPress={() => setActiveTab(tab)}
+            key={tab.key}
+            onPress={() => setActiveTab(tab.key)}
             style={[
               styles.tab,
-              activeTab === tab && styles.activeTab,
+              activeTab === tab.key &&
+              styles.activeTab,
             ]}
           >
             <Text
               style={[
                 styles.tabText,
-                activeTab === tab && styles.activeTabText,
+                activeTab === tab.key &&
+                styles.activeTabText,
               ]}
-              numberOfLines={1}
             >
-              {tab}
+              {tab.label}
             </Text>
           </TouchableOpacity>
         ))}
