@@ -19,31 +19,33 @@ import Alerts from '../../assets/NotificationIcon2.svg';
 
 import ProfileActive from '../../assets/ProfileIcon.svg';
 import Profile from '../../assets/ProfileIcon2.svg';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
 const BottomNav = ({ state, navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   const tabs = [
     {
-      name: 'Home',
+      key: 'navigation.home',
       icon: Home,
       activeIcon: HomeActive,
     },
     {
-      name: 'Jobs',
+      key: 'navigation.jobs',
       icon: Jobs,
       activeIcon: JobsActive,
     },
     {
-      name: 'Alerts',
+      key: 'navigation.alerts',
       icon: Alerts,
       activeIcon: AlertsActive,
       badge: true,
     },
     {
-      name: 'Profile',
+      key: 'navigation.profile',
       icon: Profile,
       activeIcon: ProfileActive,
     },
@@ -74,12 +76,12 @@ const BottomNav = ({ state, navigation }) => {
 
         return (
           <TouchableOpacity
-            key={tab.name}
+            key={tab.key}
             activeOpacity={0.8}
             style={[
               styles.tab,
               isActive &&
-                styles.activeTab,
+              styles.activeTab,
             ]}
             onPress={() =>
               navigation.navigate(
@@ -107,10 +109,10 @@ const BottomNav = ({ state, navigation }) => {
               style={[
                 styles.label,
                 isActive &&
-                  styles.activeLabel,
+                styles.activeLabel,
               ]}
             >
-              {tab.name}
+              {t(tab.key)}
             </Text>
           </TouchableOpacity>
         );

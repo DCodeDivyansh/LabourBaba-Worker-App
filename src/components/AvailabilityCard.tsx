@@ -13,6 +13,7 @@ import { useOnlineStatus } from '../api/OnlineStatusContext';
 import { getCurrentLocation } from '../services/location';
 import { updateWorkerLocation } from '../services/workerLocation';
 import { getAddressFromCoordinates } from '../services/reverseGeocode';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   setAddress: (address: string) => void;
@@ -20,7 +21,10 @@ interface Props {
 
 const AvailabilityCard = ({ setAddress }: Props) => {
   const { isOnline, setIsOnline } = useOnlineStatus();
+  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(false);
+
   const handleToggle = async () => {
     if (loading) return;
 
@@ -33,13 +37,11 @@ const AvailabilityCard = ({ setAddress }: Props) => {
         const { latitude, longitude } =
           await getCurrentLocation();
 
-        // Send location to backend
         await updateWorkerLocation(
           latitude,
           longitude,
         );
 
-        // Get readable address
         const currentAddress =
           await getAddressFromCoordinates(
             latitude,
@@ -70,14 +72,12 @@ const AvailabilityCard = ({ setAddress }: Props) => {
         <View style={styles.textContainer}>
           <Text style={styles.title}>
             {loading
-              ? 'Going online...'
-              : 'Available Now'}
+              ? t('dashboard.availability.goingOnline')
+              : t('dashboard.availability.availableNow')}
           </Text>
 
           <Text style={styles.subtitle}>
-            You are visible to nearby
-            {'\n'}
-            customers
+            {t('dashboard.availability.subtitle')}
           </Text>
         </View>
       </View>
@@ -89,7 +89,10 @@ const AvailabilityCard = ({ setAddress }: Props) => {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator size="small" color="#FF6200" />
+          <ActivityIndicator
+            size="small"
+            color="#FF6200"
+          />
         ) : (
           <View
             style={[

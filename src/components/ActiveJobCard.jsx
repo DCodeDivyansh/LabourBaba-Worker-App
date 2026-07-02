@@ -10,15 +10,17 @@ import {
 import LocationIcon from '../../assets/Location1.svg';
 import MoneyIcon from '../../assets/Money.svg';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const ActiveJobCard = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const MoveToJobDetailsPage =()=>{
       navigation.navigate('JobDetails');
   }
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Up Next</Text>
+      <Text style={styles.sectionTitle}> {t('dashboard.activeJob.sectionTitle')}</Text>
 
       <View style={styles.card}>
         {/* Header */}
@@ -64,7 +66,7 @@ const ActiveJobCard = () => {
         onPress={MoveToJobDetailsPage}
         >
           <Text style={styles.buttonText}>
-            View Details
+           {t('dashboard.activeJob.viewDetails')}
           </Text>
         </TouchableOpacity>
       </View>

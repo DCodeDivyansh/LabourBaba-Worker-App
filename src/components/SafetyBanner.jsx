@@ -6,10 +6,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+import { useTranslation } from 'react-i18next';
+
 import ShieldIcon from '../../assets/Shield.svg';
 import ArrowRightIcon from '../../assets/ArrowRight.svg';
 
 const SafetyBanner = () => {
+  const { t } = useTranslation();
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -17,27 +21,21 @@ const SafetyBanner = () => {
     >
       <View style={styles.leftSection}>
         <View style={styles.iconContainer}>
-          <ShieldIcon
-            width={26}
-            height={26}
-          />
+          <ShieldIcon width={26} height={26} />
         </View>
 
         <View style={styles.textContainer}>
           <Text style={styles.title}>
-            100% Secure Service
+            {t('dashboard.safetyBanner.title')}
           </Text>
 
           <Text style={styles.subtitle}>
-            Background verified professionals
+            {t('dashboard.safetyBanner.subtitle')}
           </Text>
         </View>
       </View>
 
-      <ArrowRightIcon
-        width={18}
-        height={18}
-      />
+      <ArrowRightIcon width={18} height={18} />
     </TouchableOpacity>
   );
 };
@@ -57,7 +55,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
 
     marginHorizontal: 16,
-    marginVertical:10,
+    marginVertical: 10,
 
     shadowColor: '#000',
     shadowOffset: {

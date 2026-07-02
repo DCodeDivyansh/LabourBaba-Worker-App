@@ -1,44 +1,48 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
-const banners = [
-    {
-        id: '1',
-        tag: 'NEW USER OFFER',
-        title: '50% Off First Job',
-        subtitle: 'Use code: WELCOME50',
-        color: '#FF6B00',
-    },
-    {
-        id: '2',
-        tag: 'SAFETY',
-        title: 'Verified Workers',
-        subtitle: '100% background checked',
-        color: '#007A99',
-    },
-    {
-        id: '3',
-        tag: 'BONUS',
-        title: 'Earn ₹500 Extra',
-        subtitle: 'Complete 5 jobs this week',
-        color: '#2E7D32',
-    },
-];
 
 const PromotionalBannerSlider = () => {
+    const { t } = useTranslation();
+
+    const banners = [
+        {
+            id: '1',
+            tag: t('dashboard.banners.offer.tag'),
+            title: t('dashboard.banners.offer.title'),
+            subtitle: t('dashboard.banners.offer.subtitle'),
+            color: '#FF6B00',
+        },
+        {
+            id: '2',
+            tag: t('dashboard.banners.safety.tag'),
+            title: t('dashboard.banners.safety.title'),
+            subtitle: t('dashboard.banners.safety.subtitle'),
+            color: '#007A99',
+        },
+        {
+            id: '3',
+            tag: t('dashboard.banners.bonus.tag'),
+            title: t('dashboard.banners.bonus.title'),
+            subtitle: t('dashboard.banners.bonus.subtitle'),
+            color: '#2E7D32',
+        },
+    ];
+
     return (
         <View style={styles.container}>
             <Carousel
                 loop
-  autoPlay
-  autoPlayInterval={3000}
-  scrollAnimationDuration={1000}
-  width={width}
-  height={130}
-  data={banners}
+                autoPlay
+                autoPlayInterval={3000}
+                scrollAnimationDuration={1000}
+                width={width}
+                height={130}
+                data={banners}
                 renderItem={({ item }) => (
                     <View
                         style={[

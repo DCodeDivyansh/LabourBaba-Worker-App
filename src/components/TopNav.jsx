@@ -5,6 +5,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import Logo from '../../assets/Logo.svg';
 import Name from '../../assets/LogoName.svg';
@@ -13,6 +14,7 @@ import { useOnlineStatus } from '../api/OnlineStatusContext'; // <-- adjust path
 
 const TopAppBar = () => {
   const { isOnline } = useOnlineStatus();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView
@@ -48,7 +50,9 @@ const TopAppBar = () => {
               !isOnline && styles.statusTextOffline,
             ]}
           >
-            {isOnline ? 'Online' : 'Offline'}
+            {isOnline
+              ? t('dashboard.topNav.online')
+              : t('dashboard.topNav.offline')}
           </Text>
         </View>
       </View>
