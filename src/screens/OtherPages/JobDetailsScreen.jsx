@@ -18,8 +18,10 @@ import MoneyIcon from '../../../assets/MoneyIcon.svg'
 import CalenderIcon from '../../../assets/CalenderIcon.svg'
 import NavigateIcon from '../../../assets/Navigateicon.svg'
 import CancelJobModal from './CancelJobModal';
+import { useTranslation } from 'react-i18next';
 
 const JobDetailsScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const [showCancelModal, setShowCancelModal] =
     useState(false);
@@ -27,7 +29,7 @@ const JobDetailsScreen = () => {
     <View style={styles.container}>
       {/* Header */}
 
-      <TopAppBar title="Job Details" />
+      <TopAppBar title={t('jobs.jobDetails.screenTitle')} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -40,12 +42,13 @@ const JobDetailsScreen = () => {
           <View style={styles.acceptedBadge}>
             <TickIcon />
             <Text style={styles.acceptedText}>
-              Job Accepted
+              {t('jobs.jobDetails.jobAccepted')}
             </Text>
           </View>
 
           <Text style={styles.jobId}>
-            ID: #LB-8492
+            {t('jobs.jobDetails.jobIdLabel')}
+
           </Text>
         </View>
 
@@ -71,7 +74,7 @@ const JobDetailsScreen = () => {
                   color="#FF5A00"
                 /> */}
                 <Text style={styles.ratingText}>
-                  ⭐ 4.8 (24 Reviews) • Service Seeker
+                  ⭐ 4.8 (24 {t('jobs.jobDetails.reviewsSuffix')}) • {t('jobs.jobDetails.serviceSeeker')}
                 </Text>
               </View>
             </View>
@@ -92,7 +95,7 @@ const JobDetailsScreen = () => {
             <View style={styles.cardLabel}>
               <CalenderIcon />
               <Text style={styles.cardLabelText}>
-                SCHEDULE
+                {t('jobs.jobDetails.schedule')}
               </Text>
             </View>
 
@@ -109,7 +112,7 @@ const JobDetailsScreen = () => {
             <View style={styles.cardLabel}>
               <MoneyIcon />
               <Text style={styles.cardLabelText}>
-                BUDGET
+                {t('jobs.jobDetails.budget')}
               </Text>
             </View>
 
@@ -118,7 +121,7 @@ const JobDetailsScreen = () => {
             </Text>
 
             <Text style={styles.smallText}>
-              Cash on Completion
+              {t('jobs.jobDetails.cashOnCompletion')}
             </Text>
           </View>
         </View>
@@ -137,7 +140,7 @@ const JobDetailsScreen = () => {
               <LocationIcon />
 
               <Text style={styles.addressTitle}>
-                Service Address
+                {t('jobs.jobDetails.serviceAddress')}
               </Text>
             </View>
 
@@ -153,7 +156,7 @@ const JobDetailsScreen = () => {
               <NavigateIcon />
 
               <Text style={styles.navigateText}>
-                Navigate
+                {t('jobs.jobDetails.navigate')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -166,7 +169,7 @@ const JobDetailsScreen = () => {
 
 
           <Text style={styles.callText}>
-            📞 Call Customer
+            {t('jobs.jobDetails.callCustomer')}
           </Text>
         </TouchableOpacity>
 
@@ -178,7 +181,7 @@ const JobDetailsScreen = () => {
             }}
           >
             <Text style={styles.cancelText}>
-              Cancel Job
+              {t('jobs.jobDetails.cancelJob')}
             </Text>
           </TouchableOpacity>
 
@@ -188,7 +191,7 @@ const JobDetailsScreen = () => {
             <TickIcon />
 
             <Text style={styles.completedText}>
-              Job Completed
+              {t('jobs.jobDetails.jobCompleted')}
             </Text>
           </TouchableOpacity>
         </View>
