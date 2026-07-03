@@ -14,6 +14,7 @@ import LanguageToggle from '../../components/LanguageToggle';
 import { Alert } from 'react-native';
 import { workerLogin } from '../../services/login';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { socket } from "../../services/socket";
 
 const LoginScreen = ({ navigation }: any) => {
   const handleLogin = async (
@@ -37,6 +38,16 @@ const LoginScreen = ({ navigation }: any) => {
           "worker",
           JSON.stringify(response.data)
         );
+
+        socket.connect();
+
+        socket.on("connect", () => {
+          console.log("Socket Connected:", socket.id);
+
+          socket.emit("join:worker", response.data.id);
+
+          console.log("Joined worker room:", response.data.id);
+        });
 
         navigation.reset({
           index: 0,
