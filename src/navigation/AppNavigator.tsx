@@ -8,8 +8,10 @@ import CreateProfileScreen from '../screens/auth/CreateProfileScreen';
 import Help from '../screens/profile/Help'
 import LanguageSelectionScreen from '../screens/profile/LanguageSelectionScreen'
 import JobDetailsScreen from '../screens/OtherPages/JobDetailsScreen';
+import IncomingJobScreen from '../screens/OtherPages/IncomingJobScreen';
 
 import MainTabs from './MainTabs';
+import { navigationRef } from './navigationRef';
 
 type Props = {
   initialRoute: string;
@@ -22,7 +24,7 @@ export default function AppNavigator({
   initialRoute,
 }: Props) {
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName={initialRoute}
         screenOptions={{
@@ -62,6 +64,16 @@ export default function AppNavigator({
         <Stack.Screen
           name="JobDetails"
           component={JobDetailsScreen}
+        />
+
+        <Stack.Screen
+          name="IncomingJob"
+          component={IncomingJobScreen}
+          options={{
+            presentation: 'fullScreenModal',
+            gestureEnabled: false,
+            animation: 'slide_from_bottom',
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

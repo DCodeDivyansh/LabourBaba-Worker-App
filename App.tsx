@@ -9,6 +9,7 @@ Geocoder.init("YOUR_GOOGLE_MAPS_API_KEY");
 
 import AppNavigator from './src/navigation/AppNavigator';
 import { OnlineStatusProvider } from './src/api/OnlineStatusContext';
+import IncomingJobListener from './src/components/IncomingJobListener';
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
@@ -41,6 +42,7 @@ export default function App() {
     <OnlineStatusProvider>
       <SafeAreaProvider>
         <AppNavigator initialRoute={initialRoute} />
+        <IncomingJobListener />
       </SafeAreaProvider>
     </OnlineStatusProvider>
   );
