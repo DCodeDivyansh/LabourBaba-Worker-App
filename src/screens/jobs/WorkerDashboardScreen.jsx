@@ -13,6 +13,7 @@ import { getWorkerProfile } from '../../services/workerprofile';
 import { useEffect, useState } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useOnlineStatus } from '../../api/OnlineStatusContext';
+import { socket } from "../../services/socket";
 
 export default function WorkerDashboardScreen() {
   const [worker, setWorker] = useState(null);
@@ -21,6 +22,19 @@ export default function WorkerDashboardScreen() {
 
   useEffect(() => {
     loadWorker();
+  }, []);
+  useEffect(() => {
+    const handleIncomingJob = (job) => {
+      console.log("========== NEW JOB ==========");
+      console.log(job);
+      console.log("=============================");
+    };
+
+    socket.on("job:incoming", handleIncomingJob);
+
+    return () => {
+      socket.off("job:incoming", handleIncomingJob);
+    };
   }, []);
 
   const loadWorker = async () => {
@@ -39,7 +53,7 @@ export default function WorkerDashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <TopNav/>
+      <TopNav />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

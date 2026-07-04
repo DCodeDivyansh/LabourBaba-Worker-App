@@ -14,6 +14,8 @@ import { getCurrentLocation } from '../services/location';
 import { updateWorkerLocation } from '../services/workerLocation';
 import { getAddressFromCoordinates } from '../services/reverseGeocode';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { socket } from "../services/socket";
 
 interface Props {
   setAddress: (address: string) => void;
@@ -33,32 +35,59 @@ const AvailabilityCard = ({ setAddress }: Props) => {
     try {
       setLoading(true);
 
-      if (newStatus) {
-        const { latitude, longitude } =
-          await getCurrentLocation();
+      const workerString = await AsyncStorage.getItem("worker");
 
-        await updateWorkerLocation(
-          latitude,
-          longitude,
-        );
-
-        const currentAddress =
-          await getAddressFromCoordinates(
-            latitude,
-            longitude,
-          );
-
-        setAddress(currentAddress);
+      if (!workerString) {
+        return;
       }
 
-      const response =
-        await updateOnlineStatus(newStatus);
+      const worker = JSON.parse(workerString);
+
+      if (newStatus) {
+        // ===== GOING ONLINE =====
+
+        if (!socket.connected) {
+          socket.connect();
+
+          await new Promise<void>((resolve) => {
+            socket.once("connect", () => {
+              console.log("Socket Connected:", socket.id);
+
+              socket.emit("join:worker", worker.id);
+              console.log("Joined worker room:", worker.id);
+
+              resolve();
+            });
+          });
+        } else {
+          socket.emit("join:worker", worker.id);
+        }
+
+        const { latitude, longitude } = await getCurrentLocation();
+
+        await updateWorkerLocation(latitude, longitude);
+
+        const address = await getAddressFromCoordinates(
+          latitude,
+          longitude
+        );
+
+        setAddress(address);
+      }
+
+      const response = await updateOnlineStatus(newStatus);
 
       if (response.success) {
         setIsOnline(response.data.is_online);
+
+        // ===== GOING OFFLINE =====
+        if (!newStatus && socket.connected) {
+          socket.disconnect();
+          console.log("Socket Disconnected");
+        }
       }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
     } finally {
       setLoading(false);
     }
