@@ -193,6 +193,21 @@
       "warning": "⚠️ Frequent cancellations may affect your worker rating and visibility.",
       "confirmButton": "Confirm Cancellation",
       "goBack": "Go Back"
+    },
+    "incomingJob": {
+      "title": "New Job Alert",
+      "subtitle": "Respond before it goes to another worker",
+      "customerFallback": "Customer",
+      "skill": "Skill Required",
+      "rate": "Rate",
+      "location": "Location",
+      "distance": "DISTANCE",
+      "minAway": "min away",
+      "estBudget": "EST. BUDGET",
+      "cashOnCompletion": "Cash on completion",
+      "timeToAccept": "TIME TO ACCEPT",
+      "accept": "ACCEPT JOB",
+      "decline": "Decline"
     }
   },
   "alerts": {

@@ -14,14 +14,12 @@
     "somethingWentWrong": "कुछ गलत हो गया",
     "error": "त्रुटि"
   },
-
   "navigation": {
     "home": "होम",
     "jobs": "काम",
     "alerts": "सूचनाएं",
     "profile": "प्रोफ़ाइल"
   },
-
   "auth": {
     "header": {
       "brandName": "LabourBaba",
@@ -106,7 +104,6 @@
       "version": "संस्करण {{version}}"
     }
   },
-
   "dashboard": {
     "topNav": {
       "online": "ऑनलाइन",
@@ -153,7 +150,6 @@
       "subtitle": "पृष्ठभूमि सत्यापित पेशेवर"
     }
   },
-
   "jobs": {
     "myJobsList": {
       "heading": "मेरे काम",
@@ -197,9 +193,23 @@
       "warning": "⚠️ बार-बार रद्द करने से आपकी वर्कर रेटिंग और दृश्यता प्रभावित हो सकती है।",
       "confirmButton": "रद्दीकरण की पुष्टि करें",
       "goBack": "वापस जाएं"
+    },
+    "incomingJob": {
+      "title": "नई जॉब अलर्ट",
+      "subtitle": "किसी और वर्कर के पास जाने से पहले जवाब दें",
+      "customerFallback": "ग्राहक",
+      "skill": "आवश्यक कौशल",
+      "rate": "दर",
+      "location": "स्थान",
+      "distance": "दूरी",
+      "minAway": "मिनट दूर",
+      "estBudget": "अनुमानित बजट",
+      "cashOnCompletion": "काम पूरा होने पर नकद",
+      "timeToAccept": "स्वीकार करने का समय",
+      "accept": "जॉब स्वीकार करें",
+      "decline": "अस्वीकार करें"
     }
   },
-
   "alerts": {
     "heading": "हाल की सूचनाएं",
     "markAllRead": "सभी को पढ़ा हुआ चिह्नित करें",
@@ -223,7 +233,6 @@
       "yesterday": "कल"
     }
   },
-
   "profile": {
     "content": {
       "settingsHeading": "सेटिंग्स",
