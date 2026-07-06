@@ -9,3 +9,8 @@ export const getBookingDetail = async (bookingId: string) => {
   const { data } = await api.get(`/api/bookings/${bookingId}`);
   return data;
 };
+
+export const completeBooking = async (bookingId: string) => {
+  const { data } = await api.patch(`/api/bookings/${bookingId}/complete`);
+  return data;
+};
