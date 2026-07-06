@@ -208,6 +208,24 @@
       "timeToAccept": "TIME TO ACCEPT",
       "accept": "ACCEPT JOB",
       "decline": "Decline"
+    },
+    "jobCompleted": {
+      "screenTitle": "Job Completed",
+      "congratulations": "Congratulations!",
+      "successMessage": "You have successfully completed this job",
+      "totalEarnings": "TOTAL EARNINGS",
+      "jobSummary": "Job Summary",
+      "jobId": "Job ID",
+      "customer": "Customer",
+      "location": "Location",
+      "completedOn": "Completed On",
+      "payment": "Payment",
+      "rateExperience": "How was your experience?",
+      "rateExperienceDesc": "Your feedback helps us improve the platform for everyone.",
+      "keepItUp": "Keep Up the Great Work!",
+      "keepItUpDesc": "Complete more jobs to unlock bonuses and boost your profile visibility.",
+      "backToHome": "Back to Home",
+      "viewJobHistory": "View Job History"
     }
   },
   "alerts": {

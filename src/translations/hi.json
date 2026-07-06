@@ -208,6 +208,24 @@
       "timeToAccept": "स्वीकार करने का समय",
       "accept": "जॉब स्वीकार करें",
       "decline": "अस्वीकार करें"
+    },
+    "jobCompleted": {
+      "screenTitle": "काम पूरा हुआ",
+      "congratulations": "बधाई हो!",
+      "successMessage": "आपने यह काम सफलतापूर्वक पूरा कर लिया है",
+      "totalEarnings": "कुल कमाई",
+      "jobSummary": "काम का सारांश",
+      "jobId": "जॉब आईडी",
+      "customer": "ग्राहक",
+      "location": "स्थान",
+      "completedOn": "पूरा होने की तारीख",
+      "payment": "भुगतान",
+      "rateExperience": "आपका अनुभव कैसा रहा?",
+      "rateExperienceDesc": "आपकी प्रतिक्रिया हमें सभी के लिए प्लेटफ़ॉर्म को बेहतर बनाने में मदद करती है।",
+      "keepItUp": "बढ़िया काम जारी रखें!",
+      "keepItUpDesc": "बोनस पाने और अपनी प्रोफ़ाइल दृश्यता बढ़ाने के लिए और काम पूरे करें।",
+      "backToHome": "होम पर जाएं",
+      "viewJobHistory": "काम का इतिहास देखें"
     }
   },
   "alerts": {
