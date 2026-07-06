@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TopAppBar from '../../components/TopAppBar';
 import TickIcon from '../../../assets/TickIcon.svg'
@@ -19,12 +21,108 @@ import CalenderIcon from '../../../assets/CalenderIcon.svg'
 import NavigateIcon from '../../../assets/Navigateicon.svg'
 import CancelJobModal from './CancelJobModal';
 import { useTranslation } from 'react-i18next';
+import { getBookingDetail, getWorkerBookings } from '../../services/booking';
+import { getCurrentLocation } from '../../services/location';
+
+// Haversine distance in km between two lat/lng points.
+const distanceKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
 
 const JobDetailsScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const [showCancelModal, setShowCancelModal] =
-    useState(false);
+  const route = useRoute();
+  const { bookingId, booking: initialBooking } = route.params || {};
+
+  const [booking, setBooking] = useState(initialBooking || null);
+  const [loading, setLoading] = useState(!initialBooking);
+  const [distance, setDistance] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
+  useEffect(() => {
+    const loadBookingData = async () => {
+      try {
+        let active = initialBooking;
+        if (!active) {
+          if (bookingId) {
+            const detailRes = await getBookingDetail(bookingId);
+            active = detailRes?.data;
+          } else {
+            const listRes = await getWorkerBookings();
+            const bookingsList = listRes?.data || [];
+            active = bookingsList.find(b => 
+              b.status === 'confirmed' || 
+              b.status === 'in_progress' || 
+              b.status === 'otp_pending' || 
+              b.status === 'OTP_PENDING' ||
+              b.status === 'IN_PROGRESS'
+            );
+          }
+        }
+        setBooking(active || null);
+
+        if (active && active.job && active.job.latitude != null && active.job.longitude != null) {
+          try {
+            const here = await getCurrentLocation();
+            const km = distanceKm(here.latitude, here.longitude, active.job.latitude, active.job.longitude);
+            setDistance(km.toFixed(1));
+          } catch (locErr) {
+            console.log('[JobDetailsScreen] Location error:', locErr?.message);
+          }
+        }
+      } catch (err) {
+        console.log('[JobDetailsScreen] Load data error:', err?.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBookingData();
+  }, [bookingId, initialBooking]);
+
+  const handleCall = () => {
+    if (booking?.customer?.phone) {
+      Linking.openURL(`tel:${booking.customer.phone}`);
+    }
+  };
+
+  const handleNavigate = () => {
+    if (booking?.job?.latitude != null && booking?.job?.longitude != null) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${booking.job.latitude},${booking.job.longitude}`;
+      Linking.openURL(url);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#FF5A00" />
+      </View>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <View style={styles.container}>
+        <TopAppBar title={t('jobs.jobDetails.screenTitle')} />
+        <View style={styles.center}>
+          <Text style={styles.noJobText}>No active job details found.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  const ratePerDay = booking.job_requirement?.rate_per_day || booking.job?.budget || '1,200';
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -47,8 +145,7 @@ const JobDetailsScreen = () => {
           </View>
 
           <Text style={styles.jobId}>
-            {t('jobs.jobDetails.jobIdLabel')}
-
+            {t('jobs.jobDetails.jobIdLabel')} #{booking.id ? booking.id.substring(0, 8).toUpperCase() : 'LB-8492'}
           </Text>
         </View>
 
@@ -64,29 +161,16 @@ const JobDetailsScreen = () => {
 
             <View>
               <Text style={styles.name}>
-                Rahul Sharma
+                {booking.customer?.name || 'Customer'}
               </Text>
 
               <View style={styles.ratingRow}>
-                {/* <Ionicons
-                  name="star"
-                  size={14}
-                  color="#FF5A00"
-                /> */}
                 <Text style={styles.ratingText}>
                   ⭐ 4.8 (24 {t('jobs.jobDetails.reviewsSuffix')}) • {t('jobs.jobDetails.serviceSeeker')}
                 </Text>
               </View>
             </View>
           </View>
-
-          {/* <TouchableOpacity style={styles.chatBtn}>
-            <Ionicons
-              name="chatbox-outline"
-              size={22}
-              color="#fff"
-            />
-          </TouchableOpacity> */}
         </View>
 
         {/* Schedule & Budget */}
@@ -117,7 +201,7 @@ const JobDetailsScreen = () => {
             </View>
 
             <Text style={styles.bigText}>
-              ₹1,200
+              ₹{ratePerDay}
             </Text>
 
             <Text style={styles.smallText}>
@@ -130,7 +214,9 @@ const JobDetailsScreen = () => {
         <View style={styles.locationCard}>
           <Image
             source={{
-              uri: 'https://maps.googleapis.com/maps/api/staticmap?center=Mumbai&zoom=13&size=600x300',
+              uri: booking.job?.latitude != null && booking.job?.longitude != null
+                ? `https://maps.googleapis.com/maps/api/staticmap?center=${booking.job.latitude},${booking.job.longitude}&zoom=14&size=600x300&markers=color:red%7C${booking.job.latitude},${booking.job.longitude}`
+                : 'https://maps.googleapis.com/maps/api/staticmap?center=Mumbai&zoom=13&size=600x300',
             }}
             style={styles.map}
           />
@@ -145,13 +231,18 @@ const JobDetailsScreen = () => {
             </View>
 
             <Text style={styles.address}>
-              Flat 402, Sunrise Apartments, SV Road,
-              {'\n'}
-              Bandra West, Mumbai 400050
+              {booking.job?.location || 'Job Location'}
             </Text>
+
+            {distance && (
+              <Text style={styles.distanceText}>
+                📍 {distance} km away
+              </Text>
+            )}
 
             <TouchableOpacity
               style={styles.navigateBtn}
+              onPress={handleNavigate}
             >
               <NavigateIcon />
 
@@ -165,9 +256,7 @@ const JobDetailsScreen = () => {
 
       {/* Bottom Actions */}
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.callBtn}>
-
-
+        <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
           <Text style={styles.callText}>
             {t('jobs.jobDetails.callCustomer')}
           </Text>
@@ -217,6 +306,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F8F8',
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+
+  noJobText: {
+    fontSize: 18,
+    color: '#666',
   },
 
   header: {
@@ -389,6 +490,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#555',
     lineHeight: 30,
+  },
+
+  distanceText: {
+    marginTop: 8,
+    fontSize: 16,
+    color: '#FF5A00',
+    fontWeight: '700',
   },
 
   navigateBtn: {

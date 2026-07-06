@@ -1,23 +1,96 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 
 import LocationIcon from '../../assets/Location1.svg';
 import MoneyIcon from '../../assets/Money.svg';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { getWorkerBookings } from '../services/booking';
+import { getCurrentLocation } from '../services/location';
+
+// Haversine distance in km between two lat/lng points.
+const distanceKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
 
 const ActiveJobCard = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const MoveToJobDetailsPage =()=>{
+  const [activeBooking, setActiveBooking] = useState(null);
+  const [distance, setDistance] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActiveJob = async () => {
+      try {
+        const response = await getWorkerBookings();
+        const bookingsList = response?.data || [];
+        // Find first booking that is confirmed, in_progress, or otp_pending
+        const active = bookingsList.find(b => 
+          b.status === 'confirmed' || 
+          b.status === 'in_progress' || 
+          b.status === 'otp_pending' || 
+          b.status === 'OTP_PENDING' ||
+          b.status === 'IN_PROGRESS'
+        );
+        setActiveBooking(active || null);
+
+        if (active && active.job && active.job.latitude != null && active.job.longitude != null) {
+          try {
+            const here = await getCurrentLocation();
+            const km = distanceKm(here.latitude, here.longitude, active.job.latitude, active.job.longitude);
+            setDistance(km.toFixed(1));
+          } catch (locErr) {
+            console.log('[ActiveJobCard] Location error:', locErr?.message);
+          }
+        }
+      } catch (err) {
+        console.log('[ActiveJobCard] Fetch bookings error:', err?.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActiveJob();
+  }, []);
+
+  const MoveToJobDetailsPage = () => {
+    if (activeBooking) {
+      navigation.navigate('JobDetails', { booking: activeBooking, bookingId: activeBooking.id });
+    } else {
       navigation.navigate('JobDetails');
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color="#FF6200" />
+      </View>
+    );
   }
+
+  if (!activeBooking) {
+    return null; // Don't show active job card if there is no active booking
+  }
+
+  const ratePerDay = activeBooking.job_requirement?.rate_per_day || activeBooking.job?.budget;
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}> {t('dashboard.activeJob.sectionTitle')}</Text>
@@ -34,11 +107,11 @@ const ActiveJobCard = () => {
 
           <View style={styles.userInfo}>
             <Text style={styles.name}>
-              Rahul Sharma
+              {activeBooking.customer?.name || 'Customer'}
             </Text>
 
             <Text style={styles.rating}>
-              4.8 (120+ jobs)
+              ⭐ 4.8 ({t('jobs.jobDetails.reviewsSuffix', 'reviews')}) • {t('jobs.jobDetails.serviceSeeker', 'Customer')}
             </Text>
           </View>
         </View>
@@ -48,7 +121,7 @@ const ActiveJobCard = () => {
           <LocationIcon width={18} height={18}/>
 
           <Text style={styles.infoText}>
-            Worli, Mumbai (4.2km away)
+            {activeBooking.job?.location || 'Job Location'} {distance ? `(${distance}km away)` : ''}
           </Text>
         </View>
 
@@ -57,7 +130,7 @@ const ActiveJobCard = () => {
           <MoneyIcon width={18} height={18} />
 
           <Text style={styles.infoText}>
-            ₹850 / Day
+            ₹{ratePerDay || '—'} / Day
           </Text>
         </View>
 
@@ -80,6 +153,14 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
     marginTop: 20,
+  },
+
+  loadingContainer: {
+    marginHorizontal: 16,
+    marginTop: 20,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   sectionTitle: {
@@ -145,6 +226,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFFFFF',
     fontWeight: '500',
+    flex: 1,
   },
 
   button: {
