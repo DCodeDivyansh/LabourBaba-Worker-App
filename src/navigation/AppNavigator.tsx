@@ -9,6 +9,7 @@ import Help from '../screens/profile/Help'
 import LanguageSelectionScreen from '../screens/profile/LanguageSelectionScreen'
 import JobDetailsScreen from '../screens/OtherPages/JobDetailsScreen';
 import IncomingJobScreen from '../screens/OtherPages/IncomingJobScreen';
+import JobCompletedScreen from '../screens/OtherPages/JobCompletedScreen';
 
 import MainTabs from './MainTabs';
 import { navigationRef } from './navigationRef';
@@ -71,6 +72,15 @@ export default function AppNavigator({
           component={IncomingJobScreen}
           options={{
             presentation: 'fullScreenModal',
+            gestureEnabled: false,
+            animation: 'slide_from_bottom',
+          }}
+        />
+
+        <Stack.Screen
+          name="JobCompleted"
+          component={JobCompletedScreen}
+          options={{
             gestureEnabled: false,
             animation: 'slide_from_bottom',
           }}

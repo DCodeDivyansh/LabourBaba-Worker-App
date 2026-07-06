@@ -276,6 +276,7 @@ const JobDetailsScreen = () => {
 
           <TouchableOpacity
             style={styles.completedBtn}
+            onPress={() => navigation.navigate('JobCompleted', { booking })}
           >
             <TickIcon />
 
