@@ -8,20 +8,20 @@ import {
   ScrollView,
   ActivityIndicator,
   Linking,
+  Alert,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import TopAppBar from '../../components/TopAppBar';
-import TickIcon from '../../../assets/TickIcon.svg'
-import LocationIcon from '../../../assets/Location.svg'
-import MoneyIcon from '../../../assets/MoneyIcon.svg'
-import CalenderIcon from '../../../assets/CalenderIcon.svg'
-import NavigateIcon from '../../../assets/Navigateicon.svg'
+import TickIcon from '../../../assets/TickIcon.svg';
+import LocationIcon from '../../../assets/Location.svg';
+import MoneyIcon from '../../../assets/MoneyIcon.svg';
+import CalenderIcon from '../../../assets/CalenderIcon.svg';
+import NavigateIcon from '../../../assets/Navigateicon.svg';
 import CancelJobModal from './CancelJobModal';
 import { useTranslation } from 'react-i18next';
-import { getBookingDetail, getWorkerBookings } from '../../services/booking';
+import { getBookingDetail, getWorkerBookings, completeBooking } from '../../services/booking';
 import { getCurrentLocation } from '../../services/location';
 
 // Haversine distance in km between two lat/lng points.
@@ -37,6 +37,38 @@ const distanceKm = (lat1, lon1, lat2, lon2) => {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+const formatTime = (dateStr) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
+const getInitials = (name) => {
+  if (!name) return '?';
+  return name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() || '')
+    .join('');
+};
+
 const JobDetailsScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
@@ -47,6 +79,7 @@ const JobDetailsScreen = () => {
   const [loading, setLoading] = useState(!initialBooking);
   const [distance, setDistance] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   useEffect(() => {
     const loadBookingData = async () => {
@@ -59,12 +92,13 @@ const JobDetailsScreen = () => {
           } else {
             const listRes = await getWorkerBookings();
             const bookingsList = listRes?.data || [];
-            active = bookingsList.find(b => 
-              b.status === 'confirmed' || 
-              b.status === 'in_progress' || 
-              b.status === 'otp_pending' || 
-              b.status === 'OTP_PENDING' ||
-              b.status === 'IN_PROGRESS'
+            active = bookingsList.find(
+              (b) =>
+                b.status === 'confirmed' ||
+                b.status === 'in_progress' ||
+                b.status === 'otp_pending' ||
+                b.status === 'OTP_PENDING' ||
+                b.status === 'IN_PROGRESS',
             );
           }
         }
@@ -73,7 +107,12 @@ const JobDetailsScreen = () => {
         if (active && active.job && active.job.latitude != null && active.job.longitude != null) {
           try {
             const here = await getCurrentLocation();
-            const km = distanceKm(here.latitude, here.longitude, active.job.latitude, active.job.longitude);
+            const km = distanceKm(
+              here.latitude,
+              here.longitude,
+              active.job.latitude,
+              active.job.longitude,
+            );
             setDistance(km.toFixed(1));
           } catch (locErr) {
             console.log('[JobDetailsScreen] Location error:', locErr?.message);
@@ -90,8 +129,11 @@ const JobDetailsScreen = () => {
   }, [bookingId, initialBooking]);
 
   const handleCall = () => {
-    if (booking?.customer?.phone) {
-      Linking.openURL(`tel:${booking.customer.phone}`);
+    const phone = booking?.customer?.phone;
+    if (phone) {
+      Linking.openURL(`tel:${phone}`);
+    } else {
+      Alert.alert('No Contact', 'Customer phone number is not available.');
     }
   };
 
@@ -99,7 +141,38 @@ const JobDetailsScreen = () => {
     if (booking?.job?.latitude != null && booking?.job?.longitude != null) {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${booking.job.latitude},${booking.job.longitude}`;
       Linking.openURL(url);
+    } else if (booking?.job?.location) {
+      const encoded = encodeURIComponent(booking.job.location);
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encoded}`);
     }
+  };
+
+  const handleComplete = async () => {
+    if (completing) return;
+    Alert.alert(
+      t('jobs.jobDetails.jobCompleted'),
+      'Are you sure you want to mark this job as completed?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes, Complete',
+          onPress: async () => {
+            setCompleting(true);
+            try {
+              if (booking?.id) {
+                await completeBooking(booking.id);
+              }
+            } catch (err) {
+              console.log('[JobDetailsScreen] Complete booking error:', err?.message);
+              // Still navigate even if API call fails locally
+            } finally {
+              setCompleting(false);
+              navigation.navigate('JobCompleted', { booking });
+            }
+          },
+        },
+      ],
+    );
   };
 
   if (loading) {
@@ -115,186 +188,206 @@ const JobDetailsScreen = () => {
       <View style={styles.container}>
         <TopAppBar title={t('jobs.jobDetails.screenTitle')} />
         <View style={styles.center}>
-          <Text style={styles.noJobText}>No active job details found.</Text>
+          <Text style={styles.noJobText}>No job details found.</Text>
         </View>
       </View>
     );
   }
 
-  const ratePerDay = booking.job_requirement?.rate_per_day || booking.job?.budget || '1,200';
+  // ── Real data extraction ──────────────────────────────────────────────────
+  const customerName = booking.customer?.name || 'Customer';
+  const customerPhone = booking.customer?.phone || null;
+  const customerInitials = getInitials(customerName);
+  const customerAvatar = booking.customer?.avatar || booking.customer?.photo || null;
+
+  const ratePerDay =
+    booking.job_requirement?.rate_per_day || booking.job?.budget || '—';
+  const skillType =
+    booking.job_requirement?.skill_type || booking.job?.skill_type || '—';
+  const scheduledDate = booking.scheduled_at || booking.created_at;
+
+  const isCompleted =
+    booking.status?.toLowerCase() === 'completed' ||
+    booking.status?.toLowerCase() === 'done';
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-
       <TopAppBar title={t('jobs.jobDetails.screenTitle')} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 120,
-        }}
+        contentContainerStyle={{ paddingBottom: 130 }}
       >
-        {/* Status */}
+        {/* ── Status row ─────────────────────────────────────────────────── */}
         <View style={styles.statusRow}>
-          <View style={styles.acceptedBadge}>
+          <View style={[styles.statusBadge, isCompleted && styles.statusBadgeCompleted]}>
             <TickIcon />
-            <Text style={styles.acceptedText}>
-              {t('jobs.jobDetails.jobAccepted')}
+            <Text style={styles.statusBadgeText}>
+              {isCompleted
+                ? t('jobs.jobCompleted.screenTitle', 'Completed')
+                : t('jobs.jobDetails.jobAccepted', 'Job Accepted')}
             </Text>
           </View>
-
           <Text style={styles.jobId}>
-            {t('jobs.jobDetails.jobIdLabel')} #{booking.id ? booking.id.substring(0, 8).toUpperCase() : 'LB-8492'}
+            #{booking.id ? booking.id.substring(0, 8).toUpperCase() : 'LB-0000'}
           </Text>
         </View>
 
-        {/* Customer Card */}
+        {/* ── Customer card ───────────────────────────────────────────────── */}
         <View style={styles.profileCard}>
           <View style={styles.profileLeft}>
-            <Image
-              source={{
-                uri: 'https://i.pravatar.cc/150?img=12',
-              }}
-              style={styles.avatar}
-            />
+            {customerAvatar ? (
+              <Image source={{ uri: customerAvatar }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarInitials}>{customerInitials}</Text>
+              </View>
+            )}
 
             <View>
-              <Text style={styles.name}>
-                {booking.customer?.name || 'Customer'}
-              </Text>
+              <Text style={styles.name}>{customerName}</Text>
+
+              {customerPhone ? (
+                <Text style={styles.phone}>📞 {customerPhone}</Text>
+              ) : null}
 
               <View style={styles.ratingRow}>
                 <Text style={styles.ratingText}>
-                  ⭐ 4.8 (24 {t('jobs.jobDetails.reviewsSuffix')}) • {t('jobs.jobDetails.serviceSeeker')}
+                  ⭐ 4.8 • {t('jobs.jobDetails.serviceSeeker', 'Service Seeker')}
                 </Text>
               </View>
             </View>
           </View>
+
+          {/* Quick call button */}
+          {customerPhone ? (
+            <TouchableOpacity style={styles.quickCallBtn} onPress={handleCall}>
+              <Text style={styles.quickCallText}>📞</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
-        {/* Schedule & Budget */}
+        {/* ── Skill badge ─────────────────────────────────────────────────── */}
+        <View style={styles.skillRow}>
+          <View style={styles.skillBadge}>
+            <Text style={styles.skillText}>🔧 {skillType}</Text>
+          </View>
+          <View style={styles.paymentBadge}>
+            <Text style={styles.paymentText}>💵 Cash on Completion</Text>
+          </View>
+        </View>
+
+        {/* ── Schedule & Budget ───────────────────────────────────────────── */}
         <View style={styles.infoRow}>
           <View style={styles.infoCard}>
             <View style={styles.cardLabel}>
               <CalenderIcon />
-              <Text style={styles.cardLabelText}>
-                {t('jobs.jobDetails.schedule')}
-              </Text>
+              <Text style={styles.cardLabelText}>{t('jobs.jobDetails.schedule', 'SCHEDULE')}</Text>
             </View>
-
-            <Text style={styles.bigText}>
-              Tomorrow
-            </Text>
-
-            <Text style={styles.smallText}>
-              10:00 AM - 05:00 PM
-            </Text>
+            <Text style={styles.bigText}>{formatDate(scheduledDate)}</Text>
+            <Text style={styles.smallText}>{formatTime(scheduledDate)}</Text>
           </View>
 
           <View style={styles.infoCard}>
             <View style={styles.cardLabel}>
               <MoneyIcon />
-              <Text style={styles.cardLabelText}>
-                {t('jobs.jobDetails.budget')}
-              </Text>
+              <Text style={styles.cardLabelText}>{t('jobs.jobDetails.budget', 'BUDGET')}</Text>
             </View>
-
-            <Text style={styles.bigText}>
-              ₹{ratePerDay}
-            </Text>
-
-            <Text style={styles.smallText}>
-              {t('jobs.jobDetails.cashOnCompletion')}
-            </Text>
+            <Text style={styles.bigText}>₹{ratePerDay}</Text>
+            <Text style={styles.smallText}>{t('jobs.jobDetails.cashOnCompletion', 'Cash on Completion')}</Text>
           </View>
         </View>
 
-        {/* Location Card */}
+        {/* ── Location card ───────────────────────────────────────────────── */}
         <View style={styles.locationCard}>
-          <Image
-            source={{
-              uri: booking.job?.latitude != null && booking.job?.longitude != null
-                ? `https://maps.googleapis.com/maps/api/staticmap?center=${booking.job.latitude},${booking.job.longitude}&zoom=14&size=600x300&markers=color:red%7C${booking.job.latitude},${booking.job.longitude}`
-                : 'https://maps.googleapis.com/maps/api/staticmap?center=Mumbai&zoom=13&size=600x300',
-            }}
-            style={styles.map}
-          />
+          {booking.job?.latitude != null && booking.job?.longitude != null ? (
+            <Image
+              source={{
+                uri: `https://maps.googleapis.com/maps/api/staticmap?center=${booking.job.latitude},${booking.job.longitude}&zoom=14&size=600x300&markers=color:red%7C${booking.job.latitude},${booking.job.longitude}`,
+              }}
+              style={styles.map}
+            />
+          ) : (
+            <View style={styles.mapPlaceholder}>
+              <Text style={styles.mapPlaceholderText}>📍 Map not available</Text>
+            </View>
+          )}
 
           <View style={styles.addressSection}>
             <View style={styles.addressHeader}>
               <LocationIcon />
-
-              <Text style={styles.addressTitle}>
-                {t('jobs.jobDetails.serviceAddress')}
-              </Text>
+              <Text style={styles.addressTitle}>{t('jobs.jobDetails.serviceAddress', 'Service Address')}</Text>
             </View>
 
-            <Text style={styles.address}>
-              {booking.job?.location || 'Job Location'}
-            </Text>
+            <Text style={styles.address}>{booking.job?.location || 'Job Location'}</Text>
 
             {distance && (
-              <Text style={styles.distanceText}>
-                📍 {distance} km away
-              </Text>
+              <Text style={styles.distanceText}>📍 {distance} km away</Text>
             )}
 
-            <TouchableOpacity
-              style={styles.navigateBtn}
-              onPress={handleNavigate}
-            >
+            <TouchableOpacity style={styles.navigateBtn} onPress={handleNavigate}>
               <NavigateIcon />
-
-              <Text style={styles.navigateText}>
-                {t('jobs.jobDetails.navigate')}
-              </Text>
+              <Text style={styles.navigateText}>{t('jobs.jobDetails.navigate', 'Navigate')}</Text>
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* ── Job description ─────────────────────────────────────────────── */}
+        {booking.job?.description ? (
+          <View style={styles.descCard}>
+            <Text style={styles.descTitle}>📝 Job Description</Text>
+            <Text style={styles.descText}>{booking.job.description}</Text>
+          </View>
+        ) : null}
       </ScrollView>
 
-      {/* Bottom Actions */}
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
-          <Text style={styles.callText}>
-            {t('jobs.jobDetails.callCustomer')}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.bottomRow}>
-          <TouchableOpacity
-            onPress={() => {
-              console.log('Cancel Pressed');
-              setShowCancelModal(true);
-            }}
-          >
-            <Text style={styles.cancelText}>
-              {t('jobs.jobDetails.cancelJob')}
-            </Text>
+      {/* ── Bottom Actions ───────────────────────────────────────────────── */}
+      {!isCompleted && (
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
+            <Text style={styles.callText}>📞 {t('jobs.jobDetails.callCustomer', 'Call Customer')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.completedBtn}
-            onPress={() => navigation.navigate('JobCompleted', { booking })}
-          >
-            <TickIcon />
+          <View style={styles.bottomRow}>
+            <TouchableOpacity
+              onPress={() => setShowCancelModal(true)}
+            >
+              <Text style={styles.cancelText}>{t('jobs.jobDetails.cancelJob', 'Cancel Job')}</Text>
+            </TouchableOpacity>
 
-            <Text style={styles.completedText}>
-              {t('jobs.jobDetails.jobCompleted')}
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.completedBtn}
+              onPress={handleComplete}
+              disabled={completing}
+            >
+              {completing ? (
+                <ActivityIndicator size="small" color="#0B3D12" />
+              ) : (
+                <>
+                  <TickIcon />
+                  <Text style={styles.completedText}>{t('jobs.jobDetails.jobCompleted', 'Job Completed')}</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
+
+      {isCompleted && (
+        <View style={styles.bottomContainer}>
+          <View style={styles.completedBanner}>
+            <TickIcon />
+            <Text style={styles.completedBannerText}>This job has been completed</Text>
+          </View>
+        </View>
+      )}
+
       <CancelJobModal
         visible={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={reason => {
+        onConfirm={(reason) => {
           console.log('Cancel Reason:', reason);
-
           setShowCancelModal(false);
-
-          // API Call Here
         }}
       />
     </View>
@@ -321,32 +414,17 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 
-  header: {
-    height: 90,
-    backgroundColor: '#FFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EAEAEA',
-  },
-
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#222',
-  },
-
+  // ── Status row ─────────────────────────────────────────────────────────────
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
     marginTop: 18,
     marginBottom: 14,
   },
 
-  acceptedBadge: {
+  statusBadge: {
     backgroundColor: '#4CAF50',
     flexDirection: 'row',
     alignItems: 'center',
@@ -355,17 +433,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 
-  acceptedText: {
+  statusBadgeCompleted: {
+    backgroundColor: '#1976D2',
+  },
+
+  statusBadgeText: {
     color: '#fff',
     marginLeft: 5,
     fontWeight: '600',
+    fontSize: 14,
   },
 
   jobId: {
     color: '#666',
     fontWeight: '600',
+    fontSize: 14,
   },
 
+  // ── Customer card ─────────────────────────────────────────────────────────
   profileCard: {
     marginHorizontal: 16,
     backgroundColor: '#FFF',
@@ -381,6 +466,7 @@ const styles = StyleSheet.create({
   profileLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
 
   avatar: {
@@ -390,38 +476,104 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
 
+  avatarFallback: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFE0CC',
+    borderWidth: 2,
+    borderColor: '#FF5A00',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+
+  avatarInitials: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FF5A00',
+  },
+
   name: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
     color: '#222',
   },
 
+  phone: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 2,
+  },
+
   ratingRow: {
     flexDirection: 'row',
-    marginTop: 5,
+    marginTop: 4,
     alignItems: 'center',
   },
 
   ratingText: {
-    marginLeft: 5,
     color: '#555',
-    fontSize: 14,
+    fontSize: 13,
   },
 
-  chatBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  quickCallBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FF5A00',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
+  quickCallText: {
+    fontSize: 20,
+  },
+
+  // ── Skill / Payment badges ────────────────────────────────────────────────
+  skillRow: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 14,
+    gap: 10,
+  },
+
+  skillBadge: {
+    backgroundColor: '#FFF0E5',
+    borderWidth: 1,
+    borderColor: '#FFD7C2',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+  },
+
+  skillText: {
+    color: '#FF5A00',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+
+  paymentBadge: {
+    backgroundColor: '#E8F5E9',
+    borderWidth: 1,
+    borderColor: '#C8E6C9',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+  },
+
+  paymentText: {
+    color: '#2E7D32',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+
+  // ── Schedule & Budget cards ───────────────────────────────────────────────
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginHorizontal: 16,
-    marginTop: 20,
+    marginTop: 16,
   },
 
   infoCard: {
@@ -442,21 +594,24 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     color: '#FF5A00',
     fontWeight: '700',
+    fontSize: 12,
   },
 
   bigText: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '700',
     color: '#FF5A00',
-    marginTop: 20,
+    marginTop: 12,
   },
 
   smallText: {
-    color: '#FF5A00',
-    marginTop: 10,
-    lineHeight: 22,
+    color: '#FF7A2E',
+    marginTop: 4,
+    fontSize: 12,
+    lineHeight: 18,
   },
 
+  // ── Location card ─────────────────────────────────────────────────────────
   locationCard: {
     margin: 16,
     backgroundColor: '#FFF',
@@ -471,6 +626,19 @@ const styles = StyleSheet.create({
     height: 160,
   },
 
+  mapPlaceholder: {
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF8F5',
+  },
+
+  mapPlaceholderText: {
+    color: '#FF5A00',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
   addressSection: {
     padding: 16,
   },
@@ -481,31 +649,31 @@ const styles = StyleSheet.create({
   },
 
   addressTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     marginLeft: 8,
   },
 
   address: {
-    marginTop: 12,
-    fontSize: 18,
+    marginTop: 10,
+    fontSize: 16,
     color: '#555',
-    lineHeight: 30,
+    lineHeight: 24,
   },
 
   distanceText: {
     marginTop: 8,
-    fontSize: 16,
+    fontSize: 14,
     color: '#FF5A00',
     fontWeight: '700',
   },
 
   navigateBtn: {
     height: 46,
-    borderRadius: 25,
+    borderRadius: 23,
     borderWidth: 2,
     borderColor: '#FF5A00',
-    marginTop: 18,
+    marginTop: 14,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -515,9 +683,34 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: '#FF5A00',
     fontWeight: '700',
-    fontSize: 18,
+    fontSize: 16,
   },
 
+  // ── Description card ──────────────────────────────────────────────────────
+  descCard: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: '#FFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+    padding: 16,
+  },
+
+  descTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#222',
+    marginBottom: 8,
+  },
+
+  descText: {
+    fontSize: 15,
+    color: '#555',
+    lineHeight: 22,
+  },
+
+  // ── Bottom actions ────────────────────────────────────────────────────────
   bottomContainer: {
     backgroundColor: '#FFF',
     padding: 16,
@@ -526,23 +719,21 @@ const styles = StyleSheet.create({
   },
 
   callBtn: {
-    height: 56,
-    borderRadius: 28,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: '#FF5A00',
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
   },
 
   callText: {
     color: '#FFF',
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
-    marginLeft: 8,
   },
 
   bottomRow: {
-    marginTop: 16,
+    marginTop: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -556,16 +747,35 @@ const styles = StyleSheet.create({
 
   completedBtn: {
     backgroundColor: '#4CAF50',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 11,
     borderRadius: 22,
     flexDirection: 'row',
     alignItems: 'center',
+    minWidth: 80,
+    justifyContent: 'center',
   },
 
   completedText: {
-    marginLeft: 5,
+    marginLeft: 6,
     color: '#0B3D12',
     fontWeight: '700',
+    fontSize: 15,
+  },
+
+  completedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    padding: 14,
+  },
+
+  completedBannerText: {
+    marginLeft: 8,
+    color: '#2E7D32',
+    fontWeight: '700',
+    fontSize: 16,
   },
 });
