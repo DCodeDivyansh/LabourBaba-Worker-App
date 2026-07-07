@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
+import Config from "react-native-config";
 
-export const socket = io("http://10.186.203.221:5000", {
+export const socket = io(Config.API_URL, {
   autoConnect: false,
   transports: ["websocket"],
 });
