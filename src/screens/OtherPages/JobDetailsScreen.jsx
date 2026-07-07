@@ -85,9 +85,17 @@ const JobDetailsScreen = () => {
     const loadBookingData = async () => {
       try {
         let active = initialBooking;
-        if (!active) {
-          if (bookingId) {
-            const detailRes = await getBookingDetail(bookingId);
+        // Unwrap nested booking if it is wrapped in response data
+        if (active && active.booking) {
+          active = active.booking;
+        }
+
+        const needsFetch = !active || !active.customer || !active.job;
+        if (needsFetch) {
+          setLoading(true);
+          if (bookingId || active?.id) {
+            const idToFetch = bookingId || active.id;
+            const detailRes = await getBookingDetail(idToFetch);
             active = detailRes?.data;
           } else {
             const listRes = await getWorkerBookings();

@@ -18,7 +18,7 @@ export const getIncomingDispatches = async () => {
  * Falls back to the most recent pending dispatch if an exact match
  * isn't found (e.g. slight timing differences between socket + REST).
  */
-export const getIncomingDispatchByRequirement = async (requirementId) => {
+export const getIncomingDispatchByRequirement = async (requirementId: string | null | undefined) => {
   const response = await getIncomingDispatches();
   const list = response?.data || [];
 
@@ -27,18 +27,18 @@ export const getIncomingDispatchByRequirement = async (requirementId) => {
   }
 
   return (
-    list.find((d) => d.requirement_id === requirementId) || list[0] || null
+    list.find((d: any) => d.requirement_id === requirementId) || list[0] || null
   );
 };
 
 // POST /api/dispatch/:requirementId/accept
-export const acceptDispatch = async (requirementId) => {
+export const acceptDispatch = async (requirementId: string) => {
   const { data } = await api.post(`/api/dispatch/${requirementId}/accept`);
   return data;
 };
 
 // POST /api/dispatch/:requirementId/decline
-export const declineDispatch = async (requirementId) => {
+export const declineDispatch = async (requirementId: string) => {
   const { data } = await api.post(`/api/dispatch/${requirementId}/decline`);
   return data;
 };
