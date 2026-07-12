@@ -1,93 +1,109 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
     ScrollView,
+    ActivityIndicator,
 } from 'react-native';
 import LanguageIcon from '../../assets/LanguageIcon.svg'
 import NotificationIcon from '../../assets/NotificationIcon3.svg'
 import PrivacyPolicyIcon from '../../assets/PrivacyPolicyIcon.svg'
 import HelpAndSupportIcon from '../../assets/HelpAndSupportIcon.svg'
 import LogoutIcon from '../../assets/LogOut.svg'
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native'; // ⬅ CHANGED
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import i18n from '../translations/i18n'; // adjust path if needed
+import i18n from '../translations/i18n';
+import { getWorkerBookings } from '../services/booking';
+import { onJobCompleted } from '../services/events'; // ⬅ NEW
 
-const SettingItem = ({
-    icon,
-    title,
-    subtitle,
-    showDivider = true,
-    onPress,
-}) => {
+const isCompleted = (status) => {
+    if (!status) return false;
+    const s = status.toLowerCase();
+    return s === 'completed' || s === 'done';
+};
+
+const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+const SettingItem = ({ icon, title, subtitle, showDivider = true, onPress }) => {
     return (
         <>
-            <TouchableOpacity style={styles.settingRow}
-                onPress={onPress}
-            >
+            <TouchableOpacity style={styles.settingRow} onPress={onPress}>
                 <View style={styles.leftSection}>
-                    <View style={styles.iconCircle}>
-                        {icon}
-                    </View>
-
+                    <View style={styles.iconCircle}>{icon}</View>
                     <View>
-                        <Text style={styles.settingTitle}>
-                            {title}
-                        </Text>
-
-                        {subtitle && (
-                            <Text style={styles.subtitle}>
-                                {subtitle}
-                            </Text>
-                        )}
+                        <Text style={styles.settingTitle}>{title}</Text>
+                        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
                     </View>
                 </View>
-
                 <Text style={styles.arrow}>›</Text>
             </TouchableOpacity>
-
-            {showDivider && (
-                <View style={styles.divider} />
-            )}
+            {showDivider && <View style={styles.divider} />}
         </>
     );
 };
 
-export default function ProfileContent({ name = 'Worker',
-    imageUrl, phone }) {
-
+export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
     const { t } = useTranslation();
+    const navigation = useNavigation();
+
+    const [statsLoading, setStatsLoading] = useState(true);
+    const [completedCount, setCompletedCount] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
+
+    const fetchStats = useCallback(async () => {
+        try {
+            const response = await getWorkerBookings();
+            const list = response?.data || [];
+            setCompletedCount(list.filter(b => isCompleted(b.status)).length);
+            setTotalCount(list.length);
+        } catch (err) {
+            console.log('[ProfileContent] Failed to load job stats:', err?.message);
+        } finally {
+            setStatsLoading(false);
+        }
+    }, []);
+
+    // ⬅ CHANGED: was a one-time useEffect — now refetches whenever the
+    // profile tab regains focus.
+    useFocusEffect(
+        useCallback(() => {
+            fetchStats();
+        }, [fetchStats])
+    );
+
+    // ⬅ NEW: instant bump to the completed count if this screen happens to
+    // already be mounted when a job is completed elsewhere.
+    React.useEffect(() => {
+        const unsubscribe = onJobCompleted(() => {
+            setCompletedCount((c) => c + 1);
+            setTotalCount((t) => t); // total unchanged, kept for clarity
+        });
+        return unsubscribe;
+    }, []);
 
     const handleLogout = () => {
         Alert.alert(
             t('profile.content.logoutConfirmTitle'),
             t('profile.content.logoutConfirmMessage'),
             [
-                {
-                    text: t('common.cancel'),
-                    style: 'cancel',
-                },
+                { text: t('common.cancel'), style: 'cancel' },
                 {
                     text: t('profile.content.logout'),
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            console.log("Step 1");
-
                             await AsyncStorage.removeItem("token");
-
-                            console.log("Step 2");
-
-                            navigation.reset({
-                                index: 0,
-                                routes: [{ name: "Login" }],
-                            });
-
-                            console.log("Step 3");
+                            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
                         } catch (error) {
                             console.log(error);
                         }
@@ -96,57 +112,51 @@ export default function ProfileContent({ name = 'Worker',
             ]
         );
     };
-    const navigation = useNavigation();
-    const MoveToHelpPage = () => {
-        navigation.navigate('Help');
-    };
-    const MoveToLanguagePage = () => {
-        navigation.navigate('Language');
-    };
-    return (
-        <ScrollView
-            style={styles.container}
-            showsVerticalScrollIndicator={false}
-        >
-            {/* Profile Card */}
 
+    const MoveToHelpPage = () => navigation.navigate('Help');
+    const MoveToLanguagePage = () => navigation.navigate('Language');
+    const MoveToJobHistory = () => navigation.navigate('JobsHistory');
+
+    return (
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             <View style={styles.profileCard}>
                 <View style={styles.avatarWrapper}>
                     <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>
-                            {name?.split(' ').map(n => n[0]).join('')}
-                        </Text>
+                        <Text style={styles.avatarText}>{getInitials(name)}</Text>
                     </View>
-
-                    <TouchableOpacity
-                        style={styles.editButton}
-                    >
-                        <Text style={styles.editText}>
-                            ✎
-                        </Text>
+                    <TouchableOpacity style={styles.editButton}>
+                        <Text style={styles.editText}>✎</Text>
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.name}>
-                    {name}
-                </Text>
+                <Text style={styles.name}>{name}</Text>
+                <Text style={styles.phone}>📞 +91 {phone}</Text>
 
-                <Text style={styles.phone}>
-                    📞 +91 {phone}
-                </Text>
+                <View style={styles.statsDivider} />
+
+                {statsLoading ? (
+                    <ActivityIndicator size="small" color="#FF6200" style={styles.statsLoader} />
+                ) : (
+                    <TouchableOpacity style={styles.statsRow} onPress={MoveToJobHistory} activeOpacity={0.7}>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statNum}>{completedCount}</Text>
+                            <Text style={styles.statLabel}>
+                                {t('profile.content.jobsCompleted', 'Jobs Completed')}
+                            </Text>
+                        </View>
+                        <View style={styles.statSeparator} />
+                        <View style={styles.statItem}>
+                            <Text style={styles.statNum}>{totalCount}</Text>
+                            <Text style={styles.statLabel}>
+                                {t('profile.content.totalJobs', 'Total Jobs')}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                )}
             </View>
 
-            {/* Heading */}
-
-            <Text style={styles.heading}>
-                {t('profile.content.settingsHeading')}
-            </Text>
-
-            <Text style={styles.description}>
-                {t('profile.content.settingsDescription')}
-            </Text>
-
-            {/* Settings Card 1 */}
+            <Text style={styles.heading}>{t('profile.content.settingsHeading')}</Text>
+            <Text style={styles.description}>{t('profile.content.settingsDescription')}</Text>
 
             <View style={styles.settingsCard}>
                 <SettingItem
@@ -166,15 +176,12 @@ export default function ProfileContent({ name = 'Worker',
                 />
             </View>
 
-            {/* Settings Card 2 */}
-
             <View style={styles.settingsCard}>
                 <SettingItem
                     icon={<HelpAndSupportIcon width={22} height={22} />}
                     title={t('profile.content.helpSupport')}
                     onPress={MoveToHelpPage}
                 />
-
                 <SettingItem
                     icon={<PrivacyPolicyIcon width={22} height={22} />}
                     title={t('profile.content.privacyPolicy')}
@@ -182,191 +189,52 @@ export default function ProfileContent({ name = 'Worker',
                 />
             </View>
 
-            {/* Logout */}
-
-            <TouchableOpacity
-                style={styles.logoutButton}
-                onPress={handleLogout}
-            >
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                 <LogoutIcon />
-
-                <Text style={styles.logoutText}>
-                    {t('profile.content.logout')}
-                </Text>
+                <Text style={styles.logoutText}>{t('profile.content.logout')}</Text>
             </TouchableOpacity>
         </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F8F8F8',
-        paddingHorizontal: 16,
-    },
-
+    container: { flex: 1, backgroundColor: '#F8F8F8', paddingHorizontal: 16 },
     profileCard: {
-        marginTop: 24,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: '#F3C8B6',
-        alignItems: 'center',
-        paddingVertical: 28,
+        marginTop: 24, backgroundColor: '#FFFFFF', borderRadius: 16,
+        borderWidth: 1, borderColor: '#F3C8B6', alignItems: 'center',
+        paddingVertical: 28, paddingHorizontal: 16,
     },
-
-    avatarWrapper: {
-        position: 'relative',
-        marginBottom: 16,
-    },
-
-    avatar: {
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        backgroundColor: '#FF6200',
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 3,
-    },
-
-    avatarText: {
-        color: '#FFFFFF',
-        fontSize: 34,
-        fontWeight: '600',
-    },
-
+    avatarWrapper: { position: 'relative', marginBottom: 16 },
+    avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#FF6200', justifyContent: 'center', alignItems: 'center', elevation: 3 },
+    avatarText: { color: '#FFFFFF', fontSize: 34, fontWeight: '600' },
     editButton: {
-        position: 'absolute',
-        right: -4,
-        bottom: 4,
-
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-
-        backgroundColor: '#FF6200',
-        justifyContent: 'center',
-        alignItems: 'center',
-
-        borderWidth: 2,
-        borderColor: '#FFFFFF',
+        position: 'absolute', right: -4, bottom: 4, width: 30, height: 30, borderRadius: 15,
+        backgroundColor: '#FF6200', justifyContent: 'center', alignItems: 'center',
+        borderWidth: 2, borderColor: '#FFFFFF',
     },
-
-    editText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-    },
-
-    name: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#202020',
-    },
-
-    phone: {
-        marginTop: 6,
-        fontSize: 16,
-        color: '#6B4E3D',
-    },
-
-    heading: {
-        marginTop: 28,
-        fontSize: 22,
-        fontWeight: '700',
-        color: '#202020',
-    },
-
-    description: {
-        marginTop: 6,
-        fontSize: 16,
-        lineHeight: 26,
-        color: '#6B4E3D',
-        marginBottom: 20,
-    },
-
-    settingsCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: '#F3C8B6',
-        marginBottom: 18,
-        overflow: 'hidden',
-    },
-
-    settingRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-
-        paddingHorizontal: 16,
-        paddingVertical: 18,
-    },
-
-    leftSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-
-    iconCircle: {
-        width: 42,
-        height: 42,
-        borderRadius: 21,
-        backgroundColor: '#F1F1F1',
-
-        justifyContent: 'center',
-        alignItems: 'center',
-
-        marginRight: 14,
-    },
-
-    icon: {
-        fontSize: 18,
-    },
-
-    settingTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#202020',
-    },
-
-    subtitle: {
-        marginTop: 2,
-        fontSize: 13,
-        color: '#7A6A61',
-    },
-
-    arrow: {
-        fontSize: 28,
-        color: '#8C6F63',
-    },
-
-    divider: {
-        height: 1,
-        backgroundColor: '#ECECEC',
-        marginLeft: 72,
-    },
-
+    editText: { color: '#FFFFFF', fontSize: 12 },
+    name: { fontSize: 20, fontWeight: '700', color: '#202020' },
+    phone: { marginTop: 6, fontSize: 16, color: '#6B4E3D' },
+    statsDivider: { height: 1, backgroundColor: '#F0EBE7', alignSelf: 'stretch', marginTop: 20, marginBottom: 16 },
+    statsLoader: { marginTop: 4 },
+    statsRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch', justifyContent: 'center' },
+    statItem: { alignItems: 'center', paddingHorizontal: 24 },
+    statSeparator: { width: 1, height: 32, backgroundColor: '#F0EBE7' },
+    statNum: { fontSize: 22, fontWeight: '800', color: '#FF6200' },
+    statLabel: { fontSize: 12, color: '#8A7A72', fontWeight: '600', marginTop: 3 },
+    heading: { marginTop: 28, fontSize: 22, fontWeight: '700', color: '#202020' },
+    description: { marginTop: 6, fontSize: 16, lineHeight: 26, color: '#6B4E3D', marginBottom: 20 },
+    settingsCard: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#F3C8B6', marginBottom: 18, overflow: 'hidden' },
+    settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 18 },
+    leftSection: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+    iconCircle: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#F1F1F1', justifyContent: 'center', alignItems: 'center', marginRight: 14 },
+    settingTitle: { fontSize: 18, fontWeight: '600', color: '#202020' },
+    subtitle: { marginTop: 2, fontSize: 13, color: '#7A6A61' },
+    arrow: { fontSize: 28, color: '#8C6F63' },
+    divider: { height: 1, backgroundColor: '#ECECEC', marginLeft: 72 },
     logoutButton: {
-        marginTop: 8,
-        marginBottom: 30,
-
-        backgroundColor: '#FCE0DB',
-        height: 56,
-
-        borderRadius: 14,
-
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-
-        gap: 8,
+        marginTop: 8, marginBottom: 30, backgroundColor: '#FCE0DB', height: 56, borderRadius: 14,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     },
-
-    logoutText: {
-        color: '#93000A',
-        fontSize: 17,
-        fontWeight: '600',
-    },
+    logoutText: { color: '#93000A', fontSize: 17, fontWeight: '600' },
 });
