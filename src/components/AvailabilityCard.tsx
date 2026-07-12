@@ -50,7 +50,7 @@ const AvailabilityCard = ({ setAddress }: Props) => {
           socket.connect();
 
           await new Promise<void>((resolve) => {
-            socket.once("connect", () => {
+            socket.on("connect", () => {
               console.log("Socket Connected:", socket.id);
 
               socket.emit("join:worker", worker.id);

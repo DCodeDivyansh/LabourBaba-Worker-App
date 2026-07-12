@@ -21,9 +21,11 @@ import {
   declineDispatch,
 } from '../../services/dispatch';
 import { getCurrentLocation } from '../../services/location';
+import { getSocket } from '../../services/socket'; // ⬅ NEW: adjust path/name if yours differs
 
 const WAVE_TIMEOUT_S = 30; // matches backend WAVE_TIMEOUT_MS
 const AVG_SPEED_KMPH = 25; // rough city-traffic estimate, used only for the "min away" hint
+const AUTO_DISMISS_MS = 1600; // how long to show "already taken" before closing
 
 // Haversine distance in km between two lat/lng points.
 const distanceKm = (lat1, lon1, lat2, lon2) => {
@@ -56,6 +58,7 @@ const IncomingJobScreen = () => {
   const [distance, setDistance] = useState(null); // { km, mins }
   const [actionLoading, setActionLoading] = useState(false); // accept/decline in-flight
   const [secondsLeft, setSecondsLeft] = useState(WAVE_TIMEOUT_S);
+  const [takenByOther, setTakenByOther] = useState(false); // ⬅ NEW
 
   const resolvedRef = useRef(false);
   const pulse = useRef(new Animated.Value(0)).current;
@@ -83,6 +86,37 @@ const IncomingJobScreen = () => {
     return () => sub.remove();
   }, []);
 
+  // ── NEW: if another worker accepts first, close this screen out ─────────
+  useEffect(() => {
+    const socket = getSocket?.();
+    if (!socket) return;
+
+    const handleJobTaken = (payload) => {
+      // payload shape assumed: { jobId, requirementId } — adjust to match
+      // whatever your backend actually sends on this event.
+      const matchesThisJob =
+        (payload?.requirementId && payload.requirementId === requirementId) ||
+        (payload?.jobId && payload.jobId === jobId);
+
+      if (!matchesThisJob || resolvedRef.current || actionLoading) return;
+
+      stopRinging();
+      setTakenByOther(true);
+
+      setTimeout(() => {
+        resolve();
+        if (navigation.canGoBack()) navigation.goBack();
+      }, AUTO_DISMISS_MS);
+    };
+
+    socket.on('job:fully_booked', handleJobTaken);
+
+    return () => {
+      socket.off('job:fully_booked', handleJobTaken);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requirementId, jobId, navigation, resolve]);
+
   // ── Gentle pulse on the bell pill, like a ring animation ─────────────────
   useEffect(() => {
     const loop = Animated.loop(
@@ -109,6 +143,8 @@ const IncomingJobScreen = () => {
 
   // ── Countdown based on the wave's expiresAt timestamp ────────────────────
   useEffect(() => {
+    if (takenByOther) return; // ⬅ NEW: stop counting once we know it's gone
+
     const expiryTime = expiresAt ? new Date(expiresAt).getTime() : Date.now() + WAVE_TIMEOUT_S * 1000;
 
     const tick = () => {
@@ -124,7 +160,7 @@ const IncomingJobScreen = () => {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [expiresAt, navigation, resolve]);
+  }, [expiresAt, navigation, resolve, takenByOther]);
 
   // ── Fetch full job + customer detail via the job APIs ────────────────────
   useEffect(() => {
@@ -136,15 +172,8 @@ const IncomingJobScreen = () => {
         const job = dispatchEntry?.job_requirement?.job;
 
         if (isMounted && job) {
-          console.log('========== CUSTOMER DATA ==========');
-          console.log(job.customer);
-          console.log('====================================');
-
           setCustomer(job.customer || null);
 
-          // Best-effort distance: worker's live GPS vs the job's coordinates.
-          // Never blocks the screen — if location isn't available, the
-          // distance box is simply hidden.
           if (job.latitude != null && job.longitude != null) {
             try {
               const here = await getCurrentLocation();
@@ -172,7 +201,7 @@ const IncomingJobScreen = () => {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   const handleAccept = async () => {
-    if (actionLoading || !requirementId) return;
+    if (actionLoading || takenByOther || !requirementId) return; // ⬅ guard added
     setActionLoading(true);
     try {
       const response = await acceptDispatch(requirementId);
@@ -181,11 +210,22 @@ const IncomingJobScreen = () => {
     } catch (err) {
       console.log('[IncomingJobScreen] Accept failed:', err?.message);
       setActionLoading(false);
+
+      // ⬅ NEW: if the backend rejects because someone else already took it,
+      // treat it the same as the socket event (covers the race where the
+      // event arrives slightly after our own accept request).
+      if (err?.response?.status === 409 || err?.code === 'JOB_ALREADY_TAKEN') {
+        setTakenByOther(true);
+        setTimeout(() => {
+          resolve();
+          if (navigation.canGoBack()) navigation.goBack();
+        }, AUTO_DISMISS_MS);
+      }
     }
   };
 
   const handleDecline = async () => {
-    if (actionLoading || !requirementId) return;
+    if (actionLoading || takenByOther || !requirementId) return; // ⬅ guard added
     setActionLoading(true);
     try {
       await declineDispatch(requirementId);
@@ -199,6 +239,30 @@ const IncomingJobScreen = () => {
   };
 
   const timeUp = secondsLeft <= 5;
+
+  // ⬅ NEW: early-return a small "already taken" version of the card
+  if (takenByOther) {
+    return (
+      <View style={styles.backdrop}>
+        <SafeAreaView style={styles.safe} edges={['bottom']}>
+          <View style={styles.card}>
+            <View style={styles.takenWrap}>
+              <Text style={styles.takenEmoji}>⚡</Text>
+              <Text style={styles.takenTitle}>
+                {t('jobs.incomingJob.takenTitle', 'Already Accepted')}
+              </Text>
+              <Text style={styles.takenSubtitle}>
+                {t(
+                  'jobs.incomingJob.takenSubtitle',
+                  'This job was just accepted by another worker.'
+                )}
+              </Text>
+            </View>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.backdrop}>
@@ -311,11 +375,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15, 15, 20, 0.55)',
     justifyContent: 'flex-end',
   },
-
-  safe: {
-    width: '100%',
-  },
-
+  safe: { width: '100%' },
   card: {
     backgroundColor: '#FAFAFA',
     borderTopLeftRadius: 28,
@@ -329,13 +389,26 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 12,
   },
-
-  alertPillWrap: {
+  // ⬅ NEW styles for the "already taken" state
+  takenWrap: {
+    paddingVertical: 40,
+    paddingTop: 24,
     alignItems: 'center',
-    marginTop: -18,
-    marginBottom: 18,
   },
-
+  takenEmoji: { fontSize: 34, marginBottom: 10 },
+  takenTitle: {
+    color: '#1A1A1A',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  takenSubtitle: {
+    color: '#8A8A8A',
+    fontSize: 13,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+  },
+  alertPillWrap: { alignItems: 'center', marginTop: -18, marginBottom: 18 },
   alertPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -349,144 +422,28 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-
-  bellEmoji: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-
-  alertPillText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 14,
-    letterSpacing: 0.2,
-  },
-
-  customerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#E5E5E5',
-  },
-
-  customerTextWrap: {
-    marginLeft: 14,
-    flex: 1,
-    justifyContent: 'center',
-  },
-
-  customerName: {
-    color: '#1A1A1A',
-    fontSize: 19,
-    fontWeight: '700',
-  },
-
-  customerPhone: {
-    color: '#8A8A8A',
-    fontSize: 13,
-    marginTop: 2,
-  },
-
-  hr: {
-    height: 1,
-    backgroundColor: '#E8E8E8',
-    marginVertical: 18,
-  },
-
-  boxRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-
-  box: {
-    flex: 1,
-    backgroundColor: '#F2EEEA',
-    borderRadius: 16,
-    padding: 14,
-  },
-
-  boxBudget: {
-    backgroundColor: '#FFF1E8',
-  },
-
-  boxLabel: {
-    color: '#6B6B6B',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-  },
-
-  boxLabelBudget: {
-    color: '#FF7A2E',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-  },
-
-  boxValue: {
-    color: '#1A1A1A',
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 6,
-  },
-
-  boxValueDim: {
-    color: '#B0B0B0',
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 6,
-  },
-
-  boxUnit: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#6B6B6B',
-  },
-
-  boxValueBudget: {
-    color: '#FF5A00',
-    fontSize: 22,
-    fontWeight: '800',
-    marginTop: 6,
-  },
-
-  boxSubtext: {
-    color: '#8A8A8A',
-    fontSize: 11,
-    marginTop: 4,
-  },
-
-  timeBox: {
-    backgroundColor: '#F6EDEA',
-    borderRadius: 16,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 14,
-  },
-
-  timeBoxUrgent: {
-    backgroundColor: '#FDE3E1',
-  },
-
-  timeLabel: {
-    color: '#C0392B',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-  },
-
-  timeValue: {
-    color: '#C0392B',
-    fontSize: 22,
-    fontWeight: '800',
-    marginTop: 4,
-  },
-
+  bellEmoji: { fontSize: 14, marginRight: 6 },
+  alertPillText: { color: '#fff', fontWeight: '700', fontSize: 14, letterSpacing: 0.2 },
+  customerRow: { flexDirection: 'row', alignItems: 'center' },
+  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5E5' },
+  customerTextWrap: { marginLeft: 14, flex: 1, justifyContent: 'center' },
+  customerName: { color: '#1A1A1A', fontSize: 19, fontWeight: '700' },
+  customerPhone: { color: '#8A8A8A', fontSize: 13, marginTop: 2 },
+  hr: { height: 1, backgroundColor: '#E8E8E8', marginVertical: 18 },
+  boxRow: { flexDirection: 'row', gap: 12 },
+  box: { flex: 1, backgroundColor: '#F2EEEA', borderRadius: 16, padding: 14 },
+  boxBudget: { backgroundColor: '#FFF1E8' },
+  boxLabel: { color: '#6B6B6B', fontSize: 11, fontWeight: '700', letterSpacing: 0.4 },
+  boxLabelBudget: { color: '#FF7A2E', fontSize: 11, fontWeight: '700', letterSpacing: 0.4 },
+  boxValue: { color: '#1A1A1A', fontSize: 22, fontWeight: '700', marginTop: 6 },
+  boxValueDim: { color: '#B0B0B0', fontSize: 22, fontWeight: '700', marginTop: 6 },
+  boxUnit: { fontSize: 13, fontWeight: '600', color: '#6B6B6B' },
+  boxValueBudget: { color: '#FF5A00', fontSize: 22, fontWeight: '800', marginTop: 6 },
+  boxSubtext: { color: '#8A8A8A', fontSize: 11, marginTop: 4 },
+  timeBox: { backgroundColor: '#F6EDEA', borderRadius: 16, paddingVertical: 14, alignItems: 'center', marginTop: 14 },
+  timeBoxUrgent: { backgroundColor: '#FDE3E1' },
+  timeLabel: { color: '#C0392B', fontSize: 11, fontWeight: '700', letterSpacing: 0.6 },
+  timeValue: { color: '#C0392B', fontSize: 22, fontWeight: '800', marginTop: 4 },
   acceptBtn: {
     backgroundColor: '#FF5A00',
     height: 56,
@@ -500,14 +457,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
-
-  acceptText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-
+  acceptText: { color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
   declineBtn: {
     height: 56,
     borderRadius: 28,
@@ -517,10 +467,5 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#3A3A3A',
   },
-
-  declineText: {
-    color: '#3A3A3A',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  declineText: { color: '#3A3A3A', fontSize: 16, fontWeight: '600' },
 });
