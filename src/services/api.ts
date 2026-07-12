@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Config from "react-native-config";
 
 export const api = axios.create({
-  baseURL: Config.API_URL,
+  baseURL: "https://api.labourbaba.in",
 });
 
 api.interceptors.request.use(
@@ -17,4 +17,4 @@ api.interceptors.request.use(
     return config; // <- MUST return config
   },
   (error) => Promise.reject(error)
-);
+); 
