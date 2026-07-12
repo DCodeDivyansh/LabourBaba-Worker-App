@@ -23,6 +23,7 @@ import CancelJobModal from './CancelJobModal';
 import { useTranslation } from 'react-i18next';
 import { getBookingDetail, getWorkerBookings, completeBooking } from '../../services/booking';
 import { getCurrentLocation } from '../../services/location';
+import { emitJobCompleted } from '../../services/events';
 
 // Haversine distance in km between two lat/lng points.
 const distanceKm = (lat1, lon1, lat2, lon2) => {
@@ -167,15 +168,33 @@ const JobDetailsScreen = () => {
           onPress: async () => {
             setCompleting(true);
             try {
-              if (booking?.id) {
-                await completeBooking(booking.id);
+              if (!booking?.id) {
+                throw new Error('Missing booking id');
               }
-            } catch (err) {
-              console.log('[JobDetailsScreen] Complete booking error:', err?.message);
-              // Still navigate even if API call fails locally
-            } finally {
+
+              const response = await completeBooking(booking.id);
+
+              // ⬅ FIXED: only treat this as success if the backend actually
+              // confirms it. Previously any error was caught, logged, and the
+              // screen still navigated to JobCompleted as if it worked.
+              if (response?.success === false) {
+                throw new Error(response?.message || 'Failed to complete job');
+              }
+
+              // ⬅ NEW: broadcast so any mounted screen (dashboard, jobs list,
+              // profile stats) can update immediately without waiting for a
+              // manual refresh or screen focus.
+              emitJobCompleted(booking.id);
+
               setCompleting(false);
               navigation.navigate('JobCompleted', { booking });
+            } catch (err) {
+              console.log('[JobDetailsScreen] Complete booking error:', err?.message);
+              setCompleting(false);
+              Alert.alert(
+                'Something Went Wrong',
+                "We couldn't mark this job as completed. Please check your connection and try again."
+              );
             }
           },
         },
