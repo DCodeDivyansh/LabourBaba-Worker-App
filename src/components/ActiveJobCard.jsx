@@ -50,9 +50,6 @@ const ActiveJobCard = () => {
       const bookingsList = response?.data || [];
       const active = bookingsList.find(b =>
         b.status === 'confirmed' ||
-        b.status === 'in_progress' ||
-        b.status === 'otp_pending' ||
-        b.status === 'OTP_PENDING' ||
         b.status === 'IN_PROGRESS'
       );
       setActiveBooking(active || null);

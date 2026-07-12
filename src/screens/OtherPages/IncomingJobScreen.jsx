@@ -21,7 +21,7 @@ import {
   declineDispatch,
 } from '../../services/dispatch';
 import { getCurrentLocation } from '../../services/location';
-import { getSocket } from '../../services/socket'; // ⬅ NEW: adjust path/name if yours differs
+import { socket } from '../../services/socket'; // ⬅ FIXED: use your real shared socket instance
 
 const WAVE_TIMEOUT_S = 30; // matches backend WAVE_TIMEOUT_MS
 const AVG_SPEED_KMPH = 25; // rough city-traffic estimate, used only for the "min away" hint
@@ -86,14 +86,12 @@ const IncomingJobScreen = () => {
     return () => sub.remove();
   }, []);
 
-  // ── NEW: if another worker accepts first, close this screen out ─────────
+  // ⬅ FIXED: the real event is 'job:closed' — sent to worker:${losingWorkerId}
+  // with { requirementId, jobId, reason: 'filled' } — confirmed in
+  // dispatchServices.ts. 'job:fully_booked' only goes to the customer's room
+  // and never reaches a worker.
   useEffect(() => {
-    const socket = getSocket?.();
-    if (!socket) return;
-
-    const handleJobTaken = (payload) => {
-      // payload shape assumed: { jobId, requirementId } — adjust to match
-      // whatever your backend actually sends on this event.
+    const handleJobClosed = (payload) => {
       const matchesThisJob =
         (payload?.requirementId && payload.requirementId === requirementId) ||
         (payload?.jobId && payload.jobId === jobId);
@@ -109,10 +107,9 @@ const IncomingJobScreen = () => {
       }, AUTO_DISMISS_MS);
     };
 
-    socket.on('job:fully_booked', handleJobTaken);
-
+    socket.on('job:closed', handleJobClosed);
     return () => {
-      socket.off('job:fully_booked', handleJobTaken);
+      socket.off('job:closed', handleJobClosed);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requirementId, jobId, navigation, resolve]);

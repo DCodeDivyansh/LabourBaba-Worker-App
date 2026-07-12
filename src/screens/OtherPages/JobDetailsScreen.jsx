@@ -21,9 +21,10 @@ import CalenderIcon from '../../../assets/CalenderIcon.svg';
 import NavigateIcon from '../../../assets/Navigateicon.svg';
 import CancelJobModal from './CancelJobModal';
 import { useTranslation } from 'react-i18next';
-import { getBookingDetail, getWorkerBookings, completeBooking } from '../../services/booking';
 import { getCurrentLocation } from '../../services/location';
-import { emitJobCompleted } from '../../services/events';
+import { getBookingDetail, getWorkerBookings, completeBooking, verifyOtp, cancelBooking } from '../../services/booking'; // ⬅ CHANGED
+import { emitJobCompleted, emitJobCancelled } from '../../services/events'; // ⬅ CHANGED
+import OtpVerifyModal from '../../components/OtpVerifyModal'; // ⬅ NEW
 
 // Haversine distance in km between two lat/lng points.
 const distanceKm = (lat1, lon1, lat2, lon2) => {
@@ -81,6 +82,10 @@ const JobDetailsScreen = () => {
   const [distance, setDistance] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [completing, setCompleting] = useState(false);
+
+  const [showOtpModal, setShowOtpModal] = useState(false); // ⬅ NEW
+  const [verifyingOtp, setVerifyingOtp] = useState(false); // ⬅ NEW
+  const [cancelling, setCancelling] = useState(false); // ⬅ NEW
 
   useEffect(() => {
     const loadBookingData = async () => {
@@ -153,6 +158,46 @@ const JobDetailsScreen = () => {
     } else if (booking?.job?.location) {
       const encoded = encodeURIComponent(booking.job.location);
       Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encoded}`);
+    }
+  };
+
+  // ⬅ NEW: OTP must succeed before completeBooking can ever succeed server-side
+  const handleOtpSubmit = async (otp) => {
+    if (verifyingOtp || !booking?.id) return;
+    setVerifyingOtp(true);
+    try {
+      const response = await verifyOtp(booking.id, otp);
+      if (response?.success === false) {
+        throw new Error(response?.message || 'Invalid OTP');
+      }
+      setBooking((prev) => (prev ? { ...prev, status: 'IN_PROGRESS' } : prev));
+      setShowOtpModal(false);
+    } catch (err) {
+      console.log('[JobDetailsScreen] OTP verify error:', err?.message);
+      Alert.alert('Invalid OTP', err?.message || 'That code did not match. Please try again.');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  // ⬅ NEW: was console.log stub — now actually calls the backend
+  const handleCancelConfirm = async (reasonId) => {
+    if (cancelling || !booking?.id) return;
+    const reasonText = t(`jobs.cancelModal.reasons.${reasonId}`, reasonId);
+    setCancelling(true);
+    try {
+      const response = await cancelBooking(booking.id, reasonText);
+      if (response?.success === false) {
+        throw new Error(response?.message || 'Failed to cancel job');
+      }
+      emitJobCancelled(booking.id);
+      setShowCancelModal(false);
+      setCancelling(false);
+      if (navigation.canGoBack()) navigation.goBack();
+    } catch (err) {
+      console.log('[JobDetailsScreen] Cancel booking error:', err?.message);
+      setCancelling(false);
+      Alert.alert('Something Went Wrong', "We couldn't cancel this job. Please check your connection and try again.");
     }
   };
 
@@ -233,9 +278,12 @@ const JobDetailsScreen = () => {
     booking.job_requirement?.skill_type || booking.job?.skill_type || '—';
   const scheduledDate = booking.scheduled_at || booking.created_at;
 
-  const isCompleted =
-    booking.status?.toLowerCase() === 'completed' ||
-    booking.status?.toLowerCase() === 'done';
+  // ⬅ FIXED: real backend statuses are 'confirmed' (lowercase, pre-OTP),
+  // 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'. There is no 'done'/'otp_pending'.
+  const statusLower = booking.status?.toLowerCase() || '';
+  const isCompleted = statusLower === 'completed';
+  const isInProgress = statusLower === 'in_progress';
+  const needsOtp = !isCompleted && !isInProgress;
 
   return (
     <View style={styles.container}>
@@ -382,20 +430,24 @@ const JobDetailsScreen = () => {
               <Text style={styles.cancelText}>{t('jobs.jobDetails.cancelJob', 'Cancel Job')}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.completedBtn}
-              onPress={handleComplete}
-              disabled={completing}
-            >
-              {completing ? (
-                <ActivityIndicator size="small" color="#0B3D12" />
-              ) : (
-                <>
-                  <TickIcon />
-                  <Text style={styles.completedText}>{t('jobs.jobDetails.jobCompleted', 'Job Completed')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            {needsOtp ? (
+              // ⬅ NEW: gate — a booking must reach IN_PROGRESS via OTP before
+              // completeBooking can succeed (enforced server-side in bookingServices).
+              <TouchableOpacity style={styles.completedBtn} onPress={() => setShowOtpModal(true)}>
+                <Text style={styles.completedText}>🔑 Verify OTP to Start</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.completedBtn} onPress={handleComplete} disabled={completing}>
+                {completing ? (
+                  <ActivityIndicator size="small" color="#0B3D12" />
+                ) : (
+                  <>
+                    <TickIcon />
+                    <Text style={styles.completedText}>{t('jobs.jobDetails.jobCompleted', 'Job Completed')}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       )}
@@ -412,10 +464,15 @@ const JobDetailsScreen = () => {
       <CancelJobModal
         visible={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={(reason) => {
-          console.log('Cancel Reason:', reason);
-          setShowCancelModal(false);
-        }}
+        onConfirm={handleCancelConfirm} // ⬅ FIXED: was a console.log stub
+      />
+
+      {/* ⬅ NEW */}
+      <OtpVerifyModal
+        visible={showOtpModal}
+        onClose={() => setShowOtpModal(false)}
+        onSubmit={handleOtpSubmit}
+        loading={verifyingOtp}
       />
     </View>
   );

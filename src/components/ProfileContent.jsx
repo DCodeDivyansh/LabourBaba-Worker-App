@@ -115,7 +115,9 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
 
     const MoveToHelpPage = () => navigation.navigate('Help');
     const MoveToLanguagePage = () => navigation.navigate('Language');
-    const MoveToJobHistory = () => navigation.navigate('JobsHistory');
+    // ⬅ FIXED: 'JobsHistory' isn't a registered route — the jobs list lives at
+    // the 'Jobs' tab inside 'MainTabs' (see MainTabs.jsx).
+    const MoveToJobHistory = () => navigation.navigate('MainTabs', { screen: 'Jobs' });
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
