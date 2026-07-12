@@ -4,23 +4,32 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
-
-const { width, height } = Dimensions.get('window');
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const FooterLink = ({ CreateProfile }) => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.normalText}>
-        New to LabourBaba?
-      </Text>
+  const insets = useSafeAreaInsets();
 
-      <TouchableOpacity onPress={CreateProfile}>
-        <Text style={styles.linkText}>
-          Create Account
-        </Text>
-      </TouchableOpacity>
+  return (
+    <View
+      style={[
+        styles.container,
+        { paddingBottom: Math.max(insets.bottom, 14) + 10 },
+      ]}
+    >
+      <View style={styles.divider} />
+
+      <View style={styles.row}>
+        <Text style={styles.normalText}>New to LabourBaba?</Text>
+
+        <TouchableOpacity
+          onPress={CreateProfile}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.linkText}>Create Account</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -29,23 +38,34 @@ export default FooterLink;
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#FFFFFF',
+    paddingTop: 16,
+    paddingHorizontal: 24,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#EFEAE6',
+    marginBottom: 16,
+  },
+
+  row: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 20,
-    paddingTop: 10,
+    flexWrap: 'wrap',
   },
 
   normalText: {
-    fontSize: 16,
-    color: '#5A463F',
+    fontSize: 15,
+    color: '#8A7A72',
     fontWeight: '400',
   },
 
   linkText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#FF5A00',
     fontWeight: '700',
-    marginLeft: 4,
+    marginLeft: 6,
   },
 });
