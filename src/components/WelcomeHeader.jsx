@@ -1,30 +1,23 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
-
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import InitialsAvatar from './InitialsAvatar'; // ⬅ NEW
 
-const WelcomeHeader = ({
-  name,
-}) => {
+const WelcomeHeader = ({ name }) => {
   const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
-      <View>
+      <View style={styles.textWrap}>
         <Text style={styles.greeting}>
           {t('dashboard.welcome.greeting', {
             name: name || t('dashboard.welcome.defaultName'),
           })}
         </Text>
-
-        <Text style={styles.subtitle}>
-          {t('dashboard.welcome.subtitle')}
-        </Text>
+        <Text style={styles.subtitle}>{t('dashboard.welcome.subtitle')}</Text>
       </View>
+
+      <InitialsAvatar name={name} size={52} borderColor="#FFFFFF" /> {/* ⬅ NEW */}
     </View>
   );
 };
@@ -33,33 +26,30 @@ export default WelcomeHeader;
 
 const styles = StyleSheet.create({
   container: {
-    width:'90%',
-    padding:10,
-    marginLeft:'5%',
+    width: '90%',
+    padding: 10,
+    marginLeft: '5%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
 
+  textWrap: {
+    flex: 1,
+    marginRight: 12,
+  },
+
   greeting: {
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: '700',
     color: '#1E1E1E',
-    lineHeight: 40,
+    lineHeight: 36,
   },
 
   subtitle: {
     marginTop: 4,
-    fontSize: 18,
+    fontSize: 16,
     color: '#6D4C41',
     fontWeight: '500',
-  },
-
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
 });
