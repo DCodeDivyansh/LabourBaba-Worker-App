@@ -25,17 +25,27 @@ const SafetyBanner = () => {
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.title}>
+          <Text
+            style={styles.title}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
             {t('dashboard.safetyBanner.title')}
           </Text>
 
-          <Text style={styles.subtitle}>
+          <Text
+            style={styles.subtitle}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
             {t('dashboard.safetyBanner.subtitle')}
           </Text>
         </View>
       </View>
 
-      <ArrowRightIcon width={18} height={18} />
+      <View style={styles.arrowWrap}>
+        <ArrowRightIcon width={18} height={18} />
+      </View>
     </TouchableOpacity>
   );
 };
@@ -44,7 +54,7 @@ export default SafetyBanner;
 
 const styles = StyleSheet.create({
   container: {
-    height: 90,
+    minHeight: 90, // ⬅ CHANGED: was fixed height:90, now grows if text wraps
     backgroundColor: '#ffffff',
     borderRadius: 16,
 
@@ -53,6 +63,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
 
     paddingHorizontal: 18,
+    paddingVertical: 14, // ⬅ NEW: breathing room when the card grows taller
 
     marginHorizontal: 16,
     marginVertical: 10,
@@ -71,6 +82,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    minWidth: 0, // ⬅ NEW: allows text children to shrink/wrap instead of overflowing
   },
 
   iconContainer: {
@@ -81,22 +93,31 @@ const styles = StyleSheet.create({
 
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0, // ⬅ NEW: icon never gets squeezed
   },
 
   textContainer: {
     marginLeft: 14,
     flex: 1,
+    minWidth: 0, // ⬅ NEW: lets long text actually wrap instead of pushing the row wider than the screen
   },
 
   title: {
-    fontSize: 22,
+    fontSize: 20, // ⬅ CHANGED: 22 → 20, slightly safer at narrow widths
     fontWeight: '700',
     color: '#2D2D2D',
+    flexShrink: 1, // ⬅ NEW
   },
 
   subtitle: {
     marginTop: 4,
     fontSize: 14,
     color: '#666666',
+    flexShrink: 1, // ⬅ NEW
+  },
+
+  arrowWrap: {
+    flexShrink: 0, // ⬅ NEW: arrow icon is never compressed by a long title
+    marginLeft: 8,
   },
 });
