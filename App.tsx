@@ -4,8 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Geocoder from 'react-native-geocoding';
 import './src/translations/i18n';
-// import { requestNotificationPermission } from './src/services/firebase';
-import messaging from '@react-native-firebase/messaging';
+import { requestNotificationPermission, getFCMToken, onTokenRefresh } from './src/services/firebase'; // ⬅ CHANGED
+import { updateDeviceToken } from './src/services/worker'; // ⬅ NEW
 
 Geocoder.init("YOUR_GOOGLE_MAPS_API_KEY");
 
@@ -18,22 +18,45 @@ export default function App() {
 
   useEffect(() => {
     init();
-    getFCMToken();
+    setupPushNotifications(); // ⬅ CHANGED: replaces the old inline getFCMToken
   }, []);
 
-  const getFCMToken = async () => {
+  // ⬅ NEW: proper permission → token → backend registration flow, plus a
+  // listener for token rotation. Only registers the token with the backend
+  // if a worker is actually logged in (registering it while logged out would
+  // just fail the /me/device-token call's auth check).
+  const setupPushNotifications = async () => {
     try {
-      const token = await messaging().getToken();
-      console.log("FCM Token:", token);
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        console.log('[Push] Notification permission not granted');
+        return;
+      }
+
+      const token = await getFCMToken();
+      const authToken = await AsyncStorage.getItem('token');
+      if (token && authToken) {
+        await updateDeviceToken(token);
+      }
+
+      onTokenRefresh(async (newToken) => {
+        const stillLoggedIn = await AsyncStorage.getItem('token');
+        if (stillLoggedIn) {
+          try {
+            await updateDeviceToken(newToken);
+          } catch (e) {
+            console.log('[Push] Failed to update refreshed token:', e);
+          }
+        }
+      });
     } catch (e) {
-      console.log("FCM Error:", e);
+      console.log('[Push] Setup error:', e);
     }
   };
 
   const init = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       if (token) {
         setInitialRoute("MainTabs");
       } else {
