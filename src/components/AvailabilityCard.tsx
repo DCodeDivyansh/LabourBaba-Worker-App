@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Animated,
+  Alert, // ⬅ NEW
 } from 'react-native';
 
 import AvailabilityIcon from '../../assets/Avaliable.svg';
@@ -22,14 +23,47 @@ interface Props {
   setAddress: (address: string) => void;
 }
 
+// ⬅ NEW: waits for 'connect' with a hard timeout so a failed connection
+// attempt can never hang the toggle forever. Uses `once` for both success
+// and failure paths so no listeners accumulate across repeated toggles.
+const connectSocket = (timeoutMs = 8000): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (socket.connected) {
+      resolve();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      socket.off('connect', onConnect);
+      socket.off('connect_error', onError);
+      reject(new Error('Connection timed out'));
+    }, timeoutMs);
+
+    const onConnect = () => {
+      clearTimeout(timer);
+      socket.off('connect_error', onError);
+      resolve();
+    };
+
+    const onError = (err: any) => {
+      clearTimeout(timer);
+      socket.off('connect', onConnect);
+      reject(err instanceof Error ? err : new Error('Connection failed'));
+    };
+
+    socket.once('connect', onConnect);
+    socket.once('connect_error', onError);
+    socket.connect();
+  });
+};
+
 const AvailabilityCard = ({ setAddress }: Props) => {
   const { isOnline, setIsOnline } = useOnlineStatus();
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
-  const thumbAnim = useRef(new Animated.Value(isOnline ? 1 : 0)).current; // ⬅ NEW
+  const thumbAnim = useRef(new Animated.Value(isOnline ? 1 : 0)).current;
 
-  // ⬅ NEW: animate the toggle thumb whenever isOnline changes
   useEffect(() => {
     Animated.timing(thumbAnim, {
       toValue: isOnline ? 1 : 0,
@@ -52,33 +86,41 @@ const AvailabilityCard = ({ setAddress }: Props) => {
       setLoading(true);
 
       const workerString = await AsyncStorage.getItem("worker");
-
-      if (!workerString) {
-        return;
-      }
-
+      if (!workerString) return;
       const worker = JSON.parse(workerString);
 
       if (newStatus) {
-        if (!socket.connected) {
-          socket.connect();
-
-          await new Promise<void>((resolve) => {
-            socket.on("connect", () => {
-              console.log("Socket Connected:", socket.id);
-              socket.emit("join:worker", worker.id);
-              console.log("Joined worker room:", worker.id);
-              resolve();
-            });
-          });
-        } else {
+        // ⬅ CHANGED: timeout-guarded, no leaked listeners, no hang on
+        // failure. Room-joining itself now also happens automatically via
+        // socket.ts's persistent 'connect' handler — this emit here is just
+        // for the (already-connected) fast path.
+        try {
+          if (!socket.connected) {
+            await connectSocket();
+          }
           socket.emit("join:worker", worker.id);
+        } catch (connErr) {
+          console.log('[AvailabilityCard] Socket connect failed:', connErr);
+          Alert.alert(
+            "Connection Problem",
+            "Couldn't connect to the live job feed. Check your internet connection and try again."
+          );
+          return; // ⬅ don't proceed to mark online if we can't even connect
         }
 
-        const { latitude, longitude } = await getCurrentLocation();
-        await updateWorkerLocation(latitude, longitude);
-        const address = await getAddressFromCoordinates(latitude, longitude);
-        setAddress(address);
+        try {
+          const { latitude, longitude } = await getCurrentLocation();
+          await updateWorkerLocation(latitude, longitude);
+          const address = await getAddressFromCoordinates(latitude, longitude);
+          setAddress(address);
+        } catch (locErr) {
+          console.log('[AvailabilityCard] Location error:', locErr);
+          Alert.alert(
+            "Location Needed",
+            "We couldn't get your location. Please enable location services and try again."
+          );
+          return; // ⬅ don't mark online without a location — matching jobs need it
+        }
       }
 
       const response = await updateOnlineStatus(newStatus);
@@ -90,15 +132,17 @@ const AvailabilityCard = ({ setAddress }: Props) => {
           socket.disconnect();
           console.log("Socket Disconnected");
         }
+      } else {
+        Alert.alert("Something Went Wrong", "Couldn't update your availability. Please try again.");
       }
     } catch (err) {
       console.log(err);
+      Alert.alert("Something Went Wrong", "Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ⬅ FIXED: title now actually reflects online/offline, not just loading state
   const title = loading
     ? t('dashboard.availability.goingOnline')
     : isOnline
@@ -132,10 +176,7 @@ const AvailabilityCard = ({ setAddress }: Props) => {
           <ActivityIndicator size="small" color="#FF6200" style={styles.loader} />
         ) : (
           <Animated.View
-            style={[
-              styles.thumb,
-              { transform: [{ translateX: thumbTranslate }] },
-            ]}
+            style={[styles.thumb, { transform: [{ translateX: thumbTranslate }] }]}
           />
         )}
       </TouchableOpacity>
@@ -144,6 +185,8 @@ const AvailabilityCard = ({ setAddress }: Props) => {
 };
 
 export default AvailabilityCard;
+
+// styles unchanged
 
 const styles = StyleSheet.create({
   card: {
