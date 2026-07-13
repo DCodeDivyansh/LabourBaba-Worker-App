@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "768230667755",
+    "project_id": "labourbaba-462c1",
+    "storage_bucket": "labourbaba-462c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768230667755:android:1dfff09a373fbda4e5d5ae",
+        "android_client_info": {
+          "package_name": "com.labourbaba"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_HFBYt9pQ3yX7WIYDUibCoB6zufd8Cbw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
