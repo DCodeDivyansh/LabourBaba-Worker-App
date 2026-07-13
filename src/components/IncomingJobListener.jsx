@@ -2,34 +2,15 @@ import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { socket } from '../services/socket';
 import { navigate, navigationRef } from '../navigation/navigationRef';
+import { onForegroundMessage, onNotificationOpenedApp, getInitialNotification } from '../services/firebase'; // ⬅ NEW
 
-/**
- * Mounted once at the root of the app (see App.tsx). It has no UI of its
- * own — it just listens for the "job:incoming" socket event for as long as
- * the app is alive, and pushes the IncomingJob screen on top of whatever
- * screen the worker is currently looking at, exactly like an Uber/Ola
- * incoming-ride popup.
- */
 export default function IncomingJobListener() {
-  // Guards against showing a second Incoming Job screen on top of another
-  // one if two events arrive close together.
   const isShowingRef = useRef(false);
 
   useEffect(() => {
     const handleIncomingJob = (job) => {
-      console.log('========== NEW JOB (global) ==========');
-      console.log(job);
-      console.log('========================================');
-
-      if (isShowingRef.current) {
-        // Already showing an incoming job — ignore further pushes until
-        // the current one is resolved (accepted/declined/expired).
-        return;
-      }
-
-      if (!navigationRef.isReady()) {
-        return;
-      }
+      if (isShowingRef.current) return;
+      if (!navigationRef.isReady()) return;
 
       isShowingRef.current = true;
 
@@ -47,8 +28,40 @@ export default function IncomingJobListener() {
 
     socket.on('job:incoming', handleIncomingJob);
 
+    // ⬅ NEW: FCM's `data` payload arrives as flat string values, not
+    // camelCase job object — map it to the same shape handleIncomingJob
+    // expects so both paths converge on identical navigation behavior.
+    const mapRemoteMessageToJob = (remoteMessage) => ({
+      requirementId: remoteMessage?.data?.requirementId,
+      jobId: remoteMessage?.data?.jobId,
+      skillType: remoteMessage?.data?.skillType,
+      ratePerDay: remoteMessage?.data?.ratePerDay,
+      expiresAt: remoteMessage?.data?.expiresAt,
+    });
+
+    // Foreground fallback — the socket should normally handle this while
+    // the app is open, but this guards against a momentarily dropped
+    // socket connection (e.g. right after returning from background).
+    const unsubForeground = onForegroundMessage((remoteMessage) => {
+      handleIncomingJob(mapRemoteMessageToJob(remoteMessage));
+    });
+
+    // Tapped while app was backgrounded (not killed).
+    const unsubOpened = onNotificationOpenedApp((remoteMessage) => {
+      handleIncomingJob(mapRemoteMessageToJob(remoteMessage));
+    });
+
+    // Tapped while app was fully killed — cold start case.
+    getInitialNotification().then((remoteMessage) => {
+      if (remoteMessage) {
+        handleIncomingJob(mapRemoteMessageToJob(remoteMessage));
+      }
+    });
+
     return () => {
       socket.off('job:incoming', handleIncomingJob);
+      unsubForeground();
+      unsubOpened();
     };
   }, []);
 
