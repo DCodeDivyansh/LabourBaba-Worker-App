@@ -1,11 +1,24 @@
 import { useEffect, useRef } from 'react';
-import { AppState } from 'react-native';
+import notifee, { EventType } from '@notifee/react-native';
 import { socket } from '../services/socket';
 import { navigate, navigationRef } from '../navigation/navigationRef';
-import { onForegroundMessage, onNotificationOpenedApp, getInitialNotification } from '../services/firebase'; // ⬅ NEW
+import {
+  onForegroundMessage,
+  onNotificationOpenedApp,
+  getInitialNotification,
+} from '../services/firebase';
+import { createJobOfferChannel } from '../services/notifee';
+import { acceptDispatch, declineDispatch } from '../services/dispatch';
 
 export default function IncomingJobListener() {
   const isShowingRef = useRef(false);
+
+  // Creating a channel that already exists is a safe no-op, so it's fine to
+  // call this on every mount rather than trying to track "has this run
+  // before" across app restarts.
+  useEffect(() => {
+    createJobOfferChannel();
+  }, []);
 
   useEffect(() => {
     const handleIncomingJob = (job) => {
@@ -28,9 +41,9 @@ export default function IncomingJobListener() {
 
     socket.on('job:incoming', handleIncomingJob);
 
-    // ⬅ NEW: FCM's `data` payload arrives as flat string values, not
-    // camelCase job object — map it to the same shape handleIncomingJob
-    // expects so both paths converge on identical navigation behavior.
+    // FCM's `data` payload arrives as flat string values, not a camelCase
+    // job object — map it to the same shape handleIncomingJob expects so
+    // both paths converge on identical navigation behavior.
     const mapRemoteMessageToJob = (remoteMessage) => ({
       requirementId: remoteMessage?.data?.requirementId,
       jobId: remoteMessage?.data?.jobId,
@@ -44,6 +57,34 @@ export default function IncomingJobListener() {
     // socket connection (e.g. right after returning from background).
     const unsubForeground = onForegroundMessage((remoteMessage) => {
       handleIncomingJob(mapRemoteMessageToJob(remoteMessage));
+    });
+
+    // Accept/Reject tapped directly from the notification while the app is
+    // in the foreground — background taps are handled separately in
+    // index.js via notifee.onBackgroundEvent.
+    const unsubForegroundEvent = notifee.onForegroundEvent(async ({ type, detail }) => {
+      const { notification, pressAction } = detail;
+      const requirementId = notification?.data?.requirementId;
+
+      if (!requirementId || typeof requirementId !== 'string') return;
+
+      if (type === EventType.ACTION_PRESS && pressAction?.id === 'accept') {
+        try {
+          await acceptDispatch(requirementId);
+        } catch (err) {
+          console.log('[notifee foreground] Accept failed:', err);
+        }
+        if (notification?.id) await notifee.cancelNotification(notification.id);
+      }
+
+      if (type === EventType.ACTION_PRESS && pressAction?.id === 'reject') {
+        try {
+          await declineDispatch(requirementId);
+        } catch (err) {
+          console.log('[notifee foreground] Reject failed:', err);
+        }
+        if (notification?.id) await notifee.cancelNotification(notification.id);
+      }
     });
 
     // Tapped while app was backgrounded (not killed).
@@ -61,6 +102,7 @@ export default function IncomingJobListener() {
     return () => {
       socket.off('job:incoming', handleIncomingJob);
       unsubForeground();
+      unsubForegroundEvent();
       unsubOpened();
     };
   }, []);

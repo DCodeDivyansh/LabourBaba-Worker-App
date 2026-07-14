@@ -42,3 +42,8 @@ export const declineDispatch = async (requirementId: string) => {
   const { data } = await api.post(`/api/dispatch/${requirementId}/decline`);
   return data;
 };
+
+export const getDispatchDetail = async (requirementId: string) => {
+  const { data } = await api.get(`/api/dispatch/${requirementId}`);
+  return data;
+};
