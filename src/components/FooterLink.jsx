@@ -6,6 +6,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors } from '../theme/theme';
 
 const FooterLink = ({ CreateProfile }) => {
   const insets = useSafeAreaInsets();
@@ -38,14 +39,14 @@ export default FooterLink;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     paddingTop: 16,
     paddingHorizontal: 24,
   },
 
   divider: {
     height: 1,
-    backgroundColor: '#EFEAE6',
+    backgroundColor: colors.border,
     marginBottom: 16,
   },
 
@@ -58,13 +59,13 @@ const styles = StyleSheet.create({
 
   normalText: {
     fontSize: 15,
-    color: '#8A7A72',
+    color: colors.inkSoft,
     fontWeight: '400',
   },
 
   linkText: {
     fontSize: 15,
-    color: '#FF5A00',
+    color: colors.primary,
     fontWeight: '700',
     marginLeft: 6,
   },

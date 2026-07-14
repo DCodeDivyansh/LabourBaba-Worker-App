@@ -5,10 +5,9 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
 } from 'react-native';
-import { Dimensions } from 'react-native';
 
+import { colors, radius, spacing, typography, shadow } from '../theme/theme';
 
 interface LoginFormProps {
   onLogin: (
@@ -16,6 +15,13 @@ interface LoginFormProps {
     password: string,
   ) => Promise<void>;
 }
+
+// ⬅ CHANGED: every dimension in this file used to be derived from raw
+// `Dimensions.get('window').width`. That scales fine on a single reference
+// phone, but blows up on tablets (huge, cartoonish inputs) and gets cramped
+// on small phones. Fixed dp values pulled from the shared theme render the
+// same proportions on every device, matching how the rest of the app (see
+// theme.ts, BottomNav, etc.) already does it.
 const LoginForm = ({
   onLogin,
 }: LoginFormProps) => {
@@ -25,10 +31,8 @@ const LoginForm = ({
 
   return (
     <View style={styles.card}>
-      {/* Label */}
       <Text style={styles.label}>Mobile Number</Text>
 
-      {/* Phone Input */}
       <View style={styles.inputContainer}>
         <View style={styles.countryCode}>
           <Text style={styles.countryText}>+91</Text>
@@ -38,217 +42,143 @@ const LoginForm = ({
           value={mobile}
           onChangeText={setMobile}
           placeholder="Enter your 10-digit number"
-          placeholderTextColor="#BBA79D"
+          placeholderTextColor={colors.inkSoft}
           keyboardType="phone-pad"
           maxLength={10}
           style={styles.input}
         />
       </View>
 
+      <Text style={[styles.label, styles.labelSpaced]}>Password</Text>
 
-
-
-      {/* Password Label */}
-      <Text style={[styles.label, { marginTop: 18 }]}>
-        Password
-      </Text>
-
-      {/* Password Input */}
       <View style={styles.passwordContainer}>
         <TextInput
           value={password}
           onChangeText={setPassword}
           placeholder="Enter your password"
-          placeholderTextColor="#BBA79D"
+          placeholderTextColor={colors.inkSoft}
           secureTextEntry={!showPassword}
           style={styles.passwordInput}
         />
 
         <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}>
+          onPress={() => setShowPassword(!showPassword)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <Text style={styles.showText}>
             {showPassword ? 'Hide' : 'Show'}
           </Text>
         </TouchableOpacity>
       </View>
 
-
-
-
-      {/* OTP Button */}
       <TouchableOpacity
-        style={styles.otpButton}
+        style={styles.loginButton}
         onPress={() => onLogin(mobile, password)}
+        activeOpacity={0.85}
       >
-        <Text style={styles.otpText}>Login</Text>
+        <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
-
-      {/* Divider
-      <View style={styles.dividerContainer}>
-        <View style={styles.line} />
-        <Text style={styles.dividerText}>
-          OR CONTINUE WITH
-        </Text>
-        <View style={styles.line} />
-      </View> */}
-
-      {/* Google Button
-      <TouchableOpacity style={styles.googleButton}>
-        <Image
-          source={require('../../assets/Google_logo.png')}
-          style={styles.googleLogo}
-        />
-
-        <Text style={styles.googleText}>
-          Google Sign In
-        </Text>
-      </TouchableOpacity> */}
     </View>
   );
 };
 
 export default LoginForm;
 
-
-
-const { width } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     width: '90%',
     alignSelf: 'center',
-    marginTop: 16,
-    elevation: 6,
-    borderRadius: 18,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    marginTop: spacing.lg,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xl,
     borderWidth: 1,
-    borderColor: '#E2BFB0',
+    borderColor: colors.border,
+    ...shadow.card,
   },
 
   label: {
-    fontSize: width * 0.038,
-    color: '#2F2F2F',
-    marginBottom: width * 0.025,
+    fontSize: typography.caption.fontSize,
+    fontWeight: '600',
+    color: colors.ink,
+    marginBottom: spacing.sm,
+  },
+
+  labelSpaced: {
+    marginTop: spacing.lg,
   },
 
   inputContainer: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: '#B89A8A',
-    borderRadius: width * 0.025,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     overflow: 'hidden',
-    height: width * 0.14,
+    height: 52,
   },
 
   countryCode: {
-    width: width * 0.16,
+    width: 56,
     justifyContent: 'center',
     alignItems: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#B89A8A',
+    borderRightColor: colors.border,
+    backgroundColor: colors.background,
   },
 
   countryText: {
-    fontSize: width * 0.04,
-    color: '#333',
-    fontWeight: '500',
+    fontSize: typography.body.fontSize,
+    color: colors.ink,
+    fontWeight: '600',
   },
 
   input: {
     flex: 1,
-    paddingHorizontal: width * 0.04,
-    fontSize: width * 0.038,
-    color: '#333',
+    paddingHorizontal: spacing.lg,
+    fontSize: typography.body.fontSize,
+    color: colors.ink,
   },
 
-  otpButton: {
-    height: width * 0.145,
-    backgroundColor: '#FF5A00',
-    borderRadius: width * 0.072,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: width * 0.065,
-
-    elevation: 6,
-
-    shadowColor: '#FF5A00',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-  },
-
-  otpText: {
-    color: '#FFF',
-    fontSize: width * 0.044,
-    fontWeight: '700',
-  },
-
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: width * 0.085,
-  },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#B89A8A',
-    borderRadius: width * 0.025,
-    height: width * 0.14,
-    paddingHorizontal: width * 0.04,
-    marginTop: width * 0.02,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    height: 52,
+    paddingHorizontal: spacing.lg,
   },
 
   passwordInput: {
     flex: 1,
-    fontSize: width * 0.038,
-    color: '#333',
+    fontSize: typography.body.fontSize,
+    color: colors.ink,
   },
 
   showText: {
-    color: '#FF5A00',
-    fontWeight: '600',
-    fontSize: width * 0.036,
+    color: colors.primary,
+    fontWeight: '700',
+    fontSize: typography.caption.fontSize,
   },
 
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E6D8D0',
-  },
-
-  dividerText: {
-    marginHorizontal: width * 0.03,
-    fontSize: width * 0.032,
-    color: '#6B5A54',
-    letterSpacing: 1,
-  },
-
-  googleButton: {
-    height: width * 0.14,
-    borderWidth: 1,
-    borderColor: '#B89A8A',
-    borderRadius: width * 0.07,
-
-    flexDirection: 'row',
+  loginButton: {
+    height: 54,
+    backgroundColor: colors.primary,
+    borderRadius: radius.xl,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: spacing.xxl,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
-  googleLogo: {
-    width: width * 0.055,
-    height: width * 0.055,
-    marginRight: width * 0.03,
-  },
-
-  googleText: {
-    fontSize: width * 0.038,
-    fontWeight: '600',
-    color: '#2F2F2F',
+  loginText: {
+    color: colors.surface,
+    fontSize: typography.h3.fontSize,
+    fontWeight: '700',
   },
 });

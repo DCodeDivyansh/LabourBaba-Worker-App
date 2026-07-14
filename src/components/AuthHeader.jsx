@@ -4,12 +4,15 @@ import {
   Text,
   Image,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { width } = Dimensions.get('window');
+import { colors, spacing, typography } from '../theme/theme';
 
+// ⬅ CHANGED: was `width * X` scaling on every dimension below — that made
+// the logo and text render at very different relative sizes on tablets vs.
+// phones. Fixed dp values (matching the rest of the theme) render the same
+// proportions everywhere.
 const AuthHeader = () => {
   return (
     <SafeAreaView edges={['top']}>
@@ -21,13 +24,9 @@ const AuthHeader = () => {
             resizeMode="contain"
           />
 
-          <Text style={styles.brandName}>
-            LabourBaba
-          </Text>
+          <Text style={styles.brandName}>LabourBaba</Text>
 
-          <Text style={styles.tagline}>
-            Find Book Build
-          </Text>
+          <Text style={styles.tagline}>Find · Book · Build</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -39,29 +38,31 @@ export default AuthHeader;
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingTop: 10,
+    paddingTop: spacing.sm,
   },
 
   logoContainer: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: spacing.xl,
   },
 
   logo: {
-    width: width * 0.55,
-    height: width * 0.20,
+    width: 84,
+    height: 84,
   },
 
   brandName: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: '#FF6200',
-    marginTop: 8,
+    fontSize: typography.h1.fontSize,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.primary,
+    marginTop: spacing.sm,
   },
 
   tagline: {
-    fontSize: 18,
-    color: '#6D4C41',
-    marginTop: 4,
+    fontSize: typography.body.fontSize,
+    fontWeight: '600',
+    color: colors.inkSoft,
+    marginTop: spacing.xs,
+    letterSpacing: 0.4,
   },
 });
