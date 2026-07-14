@@ -9,6 +9,7 @@ import TopAppBar from '../../components/TopAppBar';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../translations/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors, radius, spacing } from '../../theme/theme';
 
 const languages = [
   {
@@ -134,37 +135,39 @@ export default LanguageSelectionScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F8F7',
+    backgroundColor: colors.background,
   },
 
   title: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: '700',
-    color: '#1F2937',
-    marginTop: 20,
-    paddingHorizontal: 16,
+    color: colors.ink,
+    marginTop: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
 
   subtitle: {
-    fontSize: 16,
-    color: '#5C4033',
-    marginTop: 8,
-    lineHeight: 24,
-    paddingHorizontal: 16,
+    fontSize: 15,
+    color: colors.inkMuted,
+    marginTop: spacing.sm,
+    lineHeight: 22,
+    paddingHorizontal: spacing.lg,
   },
 
 
   listContainer: {
-    marginTop: 30,
-    paddingHorizontal: 16,
+    marginTop: spacing.xxl + spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
 
   languageCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    paddingHorizontal: 18,
-    paddingVertical: 22,
-    marginBottom: 18,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.lg + 2,
+    paddingVertical: spacing.xl + 2,
+    marginBottom: spacing.lg + 2,
+    borderWidth: 1,
+    borderColor: colors.border,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -172,7 +175,7 @@ const styles = StyleSheet.create({
 
   selectedLanguageCard: {
     borderWidth: 2,
-    borderColor: '#FF6B00',
+    borderColor: colors.primary,
   },
 
   leftSection: {
@@ -184,10 +187,10 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: spacing.md + 2,
   },
 
   iconText: {
@@ -195,15 +198,15 @@ const styles = StyleSheet.create({
   },
 
   languageName: {
-    fontSize: 22,
-    fontWeight: '500',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.ink,
   },
 
   languageSubtitle: {
-    marginTop: 4,
-    fontSize: 14,
-    color: '#666',
+    marginTop: spacing.xs,
+    fontSize: 13,
+    color: colors.inkSoft,
   },
 
   radioOuter: {
@@ -211,19 +214,19 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#D8B4A6',
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   radioOuterSelected: {
-    borderColor: '#FF6B00',
+    borderColor: colors.primary,
   },
 
   radioInner: {
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#FF6B00',
+    backgroundColor: colors.primary,
   },
 });

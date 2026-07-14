@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import TopAppBar from '../../components/TopAppBar';
 import Worker from '../../assets/worker.svg';
+import { colors, radius, spacing } from '../../theme/theme';
 
 const Review = () => {
   return (
@@ -133,7 +134,7 @@ export default Review;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.background,
   },
 
   scrollContent: {
@@ -143,25 +144,27 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000',
-    marginTop: 20,
-    marginHorizontal: 20,
+    color: colors.ink,
+    marginTop: spacing.xl,
+    marginHorizontal: spacing.xl,
   },
 
   desc: {
     fontSize: 14,
-    color: '#666',
-    marginHorizontal: 20,
-    marginTop: 8,
+    color: colors.inkMuted,
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.sm,
     lineHeight: 20,
   },
 
   reviewCard: {
-    backgroundColor: '#FFF',
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: {
@@ -185,48 +188,48 @@ const styles = StyleSheet.create({
   },
 
   userInfo: {
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
 
   name: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#222',
+    color: colors.ink,
   },
 
   service: {
     fontSize: 13,
-    color: '#666',
+    color: colors.inkMuted,
     marginTop: 2,
   },
 
   date: {
     fontSize: 12,
-    color: '#666',
+    color: colors.inkSoft,
   },
 
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 14,
+    marginTop: spacing.lg,
   },
 
   stars: {
     fontSize: 18,
-    color: '#FF6B00',
+    color: colors.primary,
   },
 
   rating: {
-    marginLeft: 8,
+    marginLeft: spacing.sm,
     fontSize: 16,
     fontWeight: '600',
-    color: '#444',
+    color: colors.ink,
   },
 
   reviewText: {
-    marginTop: 12,
+    marginTop: spacing.md,
     fontSize: 14,
     lineHeight: 22,
-    color: '#333',
+    color: colors.inkMuted,
   },
 });
