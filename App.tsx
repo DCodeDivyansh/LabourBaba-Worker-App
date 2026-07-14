@@ -12,6 +12,7 @@ Geocoder.init("YOUR_GOOGLE_MAPS_API_KEY");
 import AppNavigator from './src/navigation/AppNavigator';
 import { OnlineStatusProvider } from './src/api/OnlineStatusContext';
 import IncomingJobListener from './src/components/IncomingJobListener';
+import SplashScreen from './src/screens/auth/SplashScreen';
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
@@ -69,8 +70,11 @@ export default function App() {
     }
   };
 
+  // ⬅ CHANGED: was `return null` — left a blank white/black flash between
+  // the native BootSplash hiding and the navigator mounting. Showing the
+  // same branded splash here closes that gap.
   if (!initialRoute) {
-    return null;
+    return <SplashScreen />;
   }
 
   return (
