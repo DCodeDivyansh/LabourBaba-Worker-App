@@ -15,6 +15,7 @@ import { getWorkerBookings } from '../services/booking';
 import { getCurrentLocation } from '../services/location';
 import InitialsAvatar from './InitialsAvatar';
 import { onJobCompleted } from '../services/events'; // ⬅ NEW
+import { colors, radius, spacing, shadow } from '../theme/theme';
 
 const distanceKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -106,7 +107,7 @@ const ActiveJobCard = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color="#FF6200" />
+        <ActivityIndicator size="small" color={colors.primary} />
       </View>
     );
   }
@@ -179,36 +180,32 @@ const ActiveJobCard = () => {
 export default ActiveJobCard;
 
 const styles = StyleSheet.create({
-  container: { marginHorizontal: 16, marginTop: 20 },
-  loadingContainer: { marginHorizontal: 16, marginTop: 20, padding: 20, alignItems: 'center', justifyContent: 'center' },
-  sectionTitle: { fontSize: 24, fontWeight: '700', color: '#1E1E1E', marginBottom: 14 },
+  container: { marginHorizontal: spacing.lg, marginTop: spacing.xl },
+  loadingContainer: { marginHorizontal: spacing.lg, marginTop: spacing.xl, padding: 20, alignItems: 'center', justifyContent: 'center' },
+  sectionTitle: { fontSize: 24, fontWeight: '700', color: colors.ink, marginBottom: 14 },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: '#EDE7E2',
+    borderColor: colors.border,
     padding: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    ...shadow.card,
   },
   statusRow: { flexDirection: 'row', marginBottom: 14 },
   statusPill: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF1E8',
+    flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primaryLight,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12,
   },
-  statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF6200', marginRight: 6 },
-  statusText: { color: '#FF6200', fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
+  statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary, marginRight: 6 },
+  statusText: { color: colors.primary, fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
   header: { flexDirection: 'row', alignItems: 'center' },
   userInfo: { marginLeft: 14, flex: 1 },
-  name: { fontSize: 18, fontWeight: '700', color: '#1E1E1E' },
-  rating: { fontSize: 13, color: '#8A7A72', marginTop: 2 },
-  hr: { height: 1, backgroundColor: '#F0EBE7', marginVertical: 16 },
+  name: { fontSize: 18, fontWeight: '700', color: colors.ink },
+  rating: { fontSize: 13, color: colors.inkMuted, marginTop: 2 },
+  hr: { height: 1, backgroundColor: colors.border, marginVertical: 16 },
   infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  iconBadge: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#FF6200', justifyContent: 'center', alignItems: 'center' },
-  infoText: { marginLeft: 10, fontSize: 15, color: '#3A3A3A', fontWeight: '500', flex: 1 },
-  button: { backgroundColor: '#FF6200', height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
-  buttonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  iconBadge: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center' },
+  infoText: { marginLeft: 10, fontSize: 15, color: colors.ink, fontWeight: '500', flex: 1 },
+  button: { backgroundColor: colors.primary, height: 48, borderRadius: radius.xl, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
+  buttonText: { color: colors.surface, fontSize: 15, fontWeight: '700' },
 });

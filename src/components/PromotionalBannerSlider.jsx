@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { useTranslation } from 'react-i18next';
+import { colors } from '../theme/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -159,6 +160,6 @@ const styles = StyleSheet.create({
 
     dotActive: {
         width: 16,
-        backgroundColor: '#FF6200',
+        backgroundColor: colors.primary,
     },
 });

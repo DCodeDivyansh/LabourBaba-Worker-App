@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import LocationIcon from '../../assets/Location.svg'
+import LocationIcon from '../../assets/Location.svg';
+import { colors, radius, spacing, shadow } from '../theme/theme';
 
 interface Props {
   location: string;
@@ -11,11 +12,12 @@ const LocationBanner = ({
 }: Props) => {
   return (
     <View style={styles.container}>
-      <LocationIcon />
+      <View style={styles.iconBadge}>
+        <LocationIcon width={16} height={16} />
+      </View>
 
-      <Text style={styles.text}>
-        Current Location:{' '}
-        {location || 'Fetching location...'}
+      <Text style={styles.text} numberOfLines={1}>
+        Current location: <Text style={styles.value}>{location || 'Fetching location...'}</Text>
       </Text>
     </View>
   );
@@ -23,28 +25,44 @@ const LocationBanner = ({
 
 export default LocationBanner;
 
+// ⬅ CHANGED: now matches the card styling used everywhere else on the
+// dashboard (border, radius, subtle shadow) instead of a bare white box —
+// keeps every card on this screen visually consistent.
 const styles = StyleSheet.create({
   container: {
-    margin: 15,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 10,
-    // paddingVertical: 12,
-    // paddingHorizontal: 12,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     flexDirection: 'row',
+    alignItems: 'center',
+    ...shadow.card,
+  },
+
+  iconBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primaryLight,
+    justifyContent: 'center',
     alignItems: 'center',
   },
 
-  icon: {
-    fontSize: 18,
-    marginRight: 8,
+  text: {
+    marginLeft: spacing.md,
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.inkSoft,
+    flex: 1,
   },
 
-  text: {
-    marginLeft: 10,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6D4C41',
-    flex: 1,
+  value: {
+    color: colors.ink,
+    fontWeight: '700',
   },
 });

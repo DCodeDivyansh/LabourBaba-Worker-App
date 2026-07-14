@@ -19,6 +19,7 @@ import { getAddressFromCoordinates } from '../services/reverseGeocode';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { socket } from '../services/socket';
+import { colors, radius, spacing, shadow } from '../theme/theme';
 
 interface Props {
   setAddress: (address: string) => void;
@@ -264,7 +265,7 @@ const AvailabilityCard = ({ setAddress }: Props) => {
           disabled={isBusy}
         >
           {isBusy ? (
-            <ActivityIndicator size="small" color="#FF6200" style={styles.loader} />
+            <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
           ) : (
             <Animated.View
               style={[styles.thumb, { transform: [{ translateX: thumbTranslate }] }]}
@@ -309,33 +310,29 @@ export default AvailabilityCard;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#EDE7E2',
+    borderColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    marginHorizontal: spacing.lg,
+    ...shadow.card,
   },
   leftContainer: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   iconBadge: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#FF6200',
+    width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary,
     justifyContent: 'center', alignItems: 'center',
   },
-  textContainer: { marginLeft: 12, flex: 1 },
-  title: { color: '#1E1E1E', fontSize: 16, fontWeight: '700' },
-  subtitle: { color: '#8A7A72', fontSize: 13, marginTop: 3, lineHeight: 17 },
+  textContainer: { marginLeft: spacing.md, flex: 1 },
+  title: { color: colors.ink, fontSize: 16, fontWeight: '700' },
+  subtitle: { color: colors.inkMuted, fontSize: 13, marginTop: 3, lineHeight: 17 },
   toggleTrack: { width: 52, height: 30, borderRadius: 15, backgroundColor: '#EDEDED', justifyContent: 'center' },
-  toggleTrackOn: { backgroundColor: '#FFDAC2' },
-  thumb: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#FF6200' },
+  toggleTrackOn: { backgroundColor: colors.primaryLight },
+  thumb: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.primary },
   loader: { alignSelf: 'center' },
 
   // ⬅ NEW
