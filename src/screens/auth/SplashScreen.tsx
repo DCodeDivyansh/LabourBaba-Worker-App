@@ -1,15 +1,65 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
-  StatusBar,
+  Animated,
 } from 'react-native';
 
+import LogoName from '../../../assets/LogoName.svg';
+import { colors, spacing, typography } from '../../theme/theme';
+
+// In-JS fallback shown for the brief window between the native BootSplash
+// hiding and the navigator mounting (see App.tsx). Uses the same brand
+// lockup as the rest of the app so there's no visual "flash" between the
+// two splash states.
 const SplashScreen = () => {
+  const fade = useRef(new Animated.Value(0)).current;
+  const dot1 = useRef(new Animated.Value(0.3)).current;
+  const dot2 = useRef(new Animated.Value(0.3)).current;
+  const dot3 = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    Animated.timing(fade, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+
+    const pulse = (value: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(value, { toValue: 1, duration: 450, delay, useNativeDriver: true }),
+          Animated.timing(value, { toValue: 0.3, duration: 450, useNativeDriver: true }),
+        ]),
+      ).start();
+
+    pulse(dot1, 0);
+    pulse(dot2, 150);
+    pulse(dot3, 300);
+  }, [dot1, dot2, dot3, fade]);
+
   return (
     <View style={styles.container}>
+      <Animated.View style={[styles.content, { opacity: fade }]}>
+        <Image
+          source={require('../../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
+        <LogoName width={176} height={24} style={styles.logoName} />
+
+        <Text style={styles.tagline}>Find. Book. Build.</Text>
+
+        <View style={styles.loader}>
+          <Animated.View style={[styles.dot, { opacity: dot1 }]} />
+          <Animated.View style={[styles.dot, { opacity: dot2 }]} />
+          <Animated.View style={[styles.dot, { opacity: dot3 }]} />
+        </View>
+      </Animated.View>
+
       <Text style={styles.version}>Version 1.0.0</Text>
     </View>
   );
@@ -20,74 +70,50 @@ export default SplashScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F4F4',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  leftShape: {
-    position: 'absolute',
-    left: -80,
-    top: 0,
-    width: 180,
-    height: 350,
-    backgroundColor: '#EED7C7',
-    borderBottomRightRadius: 150,
-  },
-
-  rightShape: {
-    position: 'absolute',
-    right: -100,
-    bottom: 0,
-    width: 250,
-    height: 350,
-    backgroundColor: '#C8E8C8',
-    borderTopLeftRadius: 200,
-    opacity: 0.8,
-  },
-
   content: {
-    top: 400,
     alignItems: 'center',
   },
 
   logo: {
-    width: 140,
-    height: 140,
+    width: 108,
+    height: 108,
   },
 
-  title: {
-    marginTop: 10,
-    fontSize: 42,
-    fontWeight: '800',
-    color: '#FF5B00',
+  logoName: {
+    marginTop: spacing.lg,
   },
 
   tagline: {
-    marginTop: 12,
-    fontSize: 18,
-    color: '#5A4A42',
+    marginTop: spacing.sm,
+    fontSize: typography.body.fontSize,
+    fontWeight: '600',
+    color: colors.inkSoft,
     letterSpacing: 1,
   },
 
   loader: {
     flexDirection: 'row',
-    marginTop: 60,
+    marginTop: spacing.xxl,
+    gap: 8,
   },
 
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FF5B00',
-    marginHorizontal: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
 
   version: {
     position: 'absolute',
     bottom: 35,
-    fontSize: 14,
-    color: '#7A6D66',
+    fontSize: typography.caption.fontSize,
+    color: colors.inkSoft,
     letterSpacing: 2,
   },
 });
