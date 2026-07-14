@@ -3,15 +3,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const socket = io('https://api.labourbaba.in', {
   autoConnect: true,
-  transports: ['websocket'],
+  // ⬅ FIXED: was transports: ['websocket']. Forcing WebSocket-only skips
+  // Socket.IO's normal polling-first handshake — if there's any reverse
+  // proxy in front (nginx, etc.) that doesn't forward Upgrade/Connection
+  // headers, this fails outright. Letting the client fall back
+  // automatically is strictly safer on mobile networks.
+  timeout: 10000,
 });
 
-// ⬅ NEW: whenever the socket (re)connects — whether from this toggle, an
-// automatic reconnect after a dropped connection, or app relaunch — rejoin
-// the worker's room using whatever worker is currently cached. This is the
-// real fix for "online in the DB but silently stopped receiving jobs after
-// any connection blip."
 socket.on('connect', async () => {
+  console.log('CONNECTED');
+  console.log(socket.id);
   try {
     const workerString = await AsyncStorage.getItem('worker');
     if (workerString) {
@@ -22,4 +24,14 @@ socket.on('connect', async () => {
   } catch (err) {
     console.log('[socket] Failed to rejoin worker room on connect:', err);
   }
+});
+
+socket.on('disconnect', (reason) => {
+  console.log('DISCONNECTED', reason);
+});
+
+socket.on('connect_error', (err) => {
+  console.log('CONNECT ERROR');
+  console.log(err.message);
+  console.log(err);
 });
