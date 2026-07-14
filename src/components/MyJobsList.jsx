@@ -12,6 +12,7 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { getWorkerBookings } from '../services/booking';
+import { colors } from '../theme/theme';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ const statusConfig = (status) => {
   const s = (status || '').toLowerCase();
   if (s === 'completed' || s === 'done') return { label: 'Completed', color: '#2E7D32', bg: '#E8F5E9' };
   if (s === 'confirmed') return { label: 'Confirmed', color: '#1976D2', bg: '#E3F2FD' };
-  if (s === 'in_progress') return { label: 'In Progress', color: '#FF6200', bg: '#FFF1E8' };
+  if (s === 'in_progress') return { label: 'In Progress', color: colors.primary, bg: '#FFF1E8' };
   if (s === 'otp_pending') return { label: 'OTP Pending', color: '#B45309', bg: '#FFF8E1' };
   if (s === 'cancelled') return { label: 'Cancelled', color: '#C0392B', bg: '#FDECEA' };
   return { label: status || 'Pending', color: '#6B6B6B', bg: '#F2F2F2' };
@@ -272,7 +273,7 @@ const MyJobsList = () => {
       {/* List */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6200" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
@@ -286,8 +287,8 @@ const MyJobsList = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#FF6200']}
-              tintColor="#FF6200"
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
           }
         />
@@ -350,7 +351,7 @@ const styles = StyleSheet.create({
   statNum: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#FF6200',
+    color: colors.primary,
   },
 
   statLabel: {
@@ -379,8 +380,8 @@ const styles = StyleSheet.create({
   },
 
   activeTab: {
-    backgroundColor: '#FF6200',
-    borderColor: '#FF6200',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
 
   tabText: {
@@ -429,7 +430,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FF6200',
+    color: colors.primary,
   },
 
   userInfo: {
@@ -500,7 +501,7 @@ const styles = StyleSheet.create({
   },
 
   infoEarnings: {
-    color: '#FF6200',
+    color: colors.primary,
     fontWeight: '700',
   },
 
@@ -510,14 +511,14 @@ const styles = StyleSheet.create({
 
   detailButton: {
     borderWidth: 1.5,
-    borderColor: '#FF6200',
+    borderColor: colors.primary,
     borderRadius: 22,
     paddingVertical: 11,
     alignItems: 'center',
   },
 
   detailText: {
-    color: '#FF6200',
+    color: colors.primary,
     fontWeight: '700',
     fontSize: 14,
   },

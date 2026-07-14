@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import i18n from '../translations/i18n';
+import { colors, radius, spacing, shadow } from '../theme/theme';
 
 const alerts = [
   {
@@ -50,38 +51,38 @@ const AlertCard = ({ item }) => {
     switch (item.type) {
       case 'job':
         return {
-          bg: '#FFFFFF',
-          border: '#FF6200',
-          iconBg: '#9EA7FF',
+          bg: colors.surface,
+          border: colors.primary,
+          iconBg: colors.primary,
           icon: '🛠',
-          timeColor: '#FF6200',
+          timeColor: colors.primary,
         };
 
       case 'success':
         return {
-          bg: '#FFFFFF',
-          border: '#FFFFFF',
-          iconBg: '#4CAF50',
+          bg: colors.surface,
+          border: colors.surface,
+          iconBg: colors.success,
           icon: '✓',
-          timeColor: '#8B6B5B',
+          timeColor: colors.inkSoft,
         };
 
       case 'danger':
         return {
-          bg: '#FCE8E3',
-          border: '#E53935',
-          iconBg: '#B71C1C',
+          bg: colors.dangerBg,
+          border: colors.danger,
+          iconBg: colors.danger,
           icon: '✕',
-          timeColor: '#D32F2F',
+          timeColor: colors.danger,
         };
 
       default:
         return {
-          bg: '#FFFFFF',
-          border: '#FFFFFF',
-          iconBg: '#E0E0E0',
+          bg: colors.surface,
+          border: colors.surface,
+          iconBg: colors.inkSoft,
           icon: '📢',
-          timeColor: '#8B6B5B',
+          timeColor: colors.inkSoft,
         };
     }
   };
@@ -165,9 +166,9 @@ export default function RecentAlerts() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
   },
 
   topRow: {
@@ -178,33 +179,26 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#1F1F1F',
+    color: colors.ink,
   },
 
   markRead: {
-    color: '#FF6200',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '600',
   },
 
   card: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
+    padding: spacing.lg,
+    borderRadius: radius.md,
     marginBottom: 14,
-
+    borderWidth: 1,
+    borderColor: colors.border,
     borderLeftWidth: 4,
-
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadow.card,
   },
 
   iconWrapper: {
@@ -218,13 +212,13 @@ const styles = StyleSheet.create({
 
   icon: {
     fontSize: 20,
-    color: '#FFFFFF',
+    color: colors.surface,
     fontWeight: '700',
   },
 
   content: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
 
   headerRow: {
@@ -235,9 +229,9 @@ const styles = StyleSheet.create({
 
   title: {
     flex: 1,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
-    color: '#2B2B2B',
+    color: colors.ink,
     marginRight: 10,
   },
 
@@ -248,8 +242,8 @@ const styles = StyleSheet.create({
 
   message: {
     marginTop: 6,
-    fontSize: 15,
-    lineHeight: 24,
-    color: '#6E5246',
+    fontSize: 14,
+    lineHeight: 22,
+    color: colors.inkMuted,
   },
 });

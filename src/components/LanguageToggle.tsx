@@ -5,24 +5,24 @@ import {
   TouchableOpacity,
   Animated,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
 
-const { width } = Dimensions.get('window');
+import { colors, spacing } from '../theme/theme';
 
-const TOGGLE_WIDTH = width * 0.42; // 42% of screen width
-const TOGGLE_HEIGHT = TOGGLE_WIDTH * 0.275;
-
+// ⬅ CHANGED: fixed dp values instead of `Dimensions.get('window').width`
+// scaling — keeps the pill a consistent, deliberate size on phones and
+// tablets alike instead of stretching with screen width.
+const TOGGLE_WIDTH = 160;
+const TOGGLE_HEIGHT = 44;
 const OPTION_WIDTH = TOGGLE_WIDTH / 2;
-const ACTIVE_WIDTH = OPTION_WIDTH;
-const ACTIVE_HEIGHT = TOGGLE_HEIGHT * 0.86;
+const ACTIVE_HEIGHT = TOGGLE_HEIGHT - 6;
 
 const LanguageToggle = () => {
   const [selected, setSelected] = useState('English');
 
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const toggleLanguage = (lang:any) => {
+  const toggleLanguage = (lang: string) => {
     setSelected(lang);
 
     Animated.timing(slideAnim, {
@@ -44,7 +44,7 @@ const LanguageToggle = () => {
           style={[
             styles.activeBackground,
             {
-              width: ACTIVE_WIDTH,
+              width: OPTION_WIDTH,
               height: ACTIVE_HEIGHT,
               borderRadius: ACTIVE_HEIGHT / 2,
               transform: [{ translateX }],
@@ -89,24 +89,25 @@ export default LanguageToggle;
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginTop: '10%',
+    marginTop: spacing.xl,
   },
 
   toggleWrapper: {
     width: TOGGLE_WIDTH,
     height: TOGGLE_HEIGHT,
     borderRadius: TOGGLE_HEIGHT / 2,
-    backgroundColor: '#EFE5DE',
+    backgroundColor: colors.primaryLight,
     flexDirection: 'row',
     position: 'relative',
     overflow: 'hidden',
+    padding: 3,
   },
 
   activeBackground: {
     position: 'absolute',
-    backgroundColor: '#FF6200',
-    top: '7%',
-    left: 0,
+    backgroundColor: colors.primary,
+    top: 3,
+    left: 3,
   },
 
   option: {
@@ -117,13 +118,13 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    fontSize: width * 0.036,
-    color: '#6D4C41',
-    fontWeight: '500',
+    fontSize: 14,
+    color: colors.inkSoft,
+    fontWeight: '600',
   },
 
   activeText: {
-    color: '#FFFFFF',
+    color: colors.surface,
     fontWeight: '700',
   },
 });

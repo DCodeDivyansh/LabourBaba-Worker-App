@@ -1,8 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../theme/theme';
 
+// ⬅ CHANGED: first swatch now matches the app's actual brand primary
+// (colors.primary) instead of an old, slightly-off orange.
 const AVATAR_COLORS = [
-  '#FF6200', '#2E7D32', '#007A99', '#6A4C93',
+  colors.primary, '#2E7D32', '#007A99', '#6A4C93',
   '#C2410C', '#0F766E', '#B45309', '#4338CA',
 ];
 
