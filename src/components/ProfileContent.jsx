@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../translations/i18n';
 import { getWorkerBookings } from '../services/booking';
 import { onJobCompleted } from '../services/events'; // ⬅ NEW
+import { colors, radius, shadow } from '../theme/theme';
 
 const isCompleted = (status) => {
     if (!status) return false;
@@ -137,7 +138,7 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
                 <View style={styles.statsDivider} />
 
                 {statsLoading ? (
-                    <ActivityIndicator size="small" color="#FF6200" style={styles.statsLoader} />
+                    <ActivityIndicator size="small" color={colors.primary} style={styles.statsLoader} />
                 ) : (
                     <TouchableOpacity style={styles.statsRow} onPress={MoveToJobHistory} activeOpacity={0.7}>
                         <View style={styles.statItem}>
@@ -200,43 +201,44 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8F8F8', paddingHorizontal: 16 },
+    container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: 16 },
     profileCard: {
-        marginTop: 24, backgroundColor: '#FFFFFF', borderRadius: 16,
-        borderWidth: 1, borderColor: '#F3C8B6', alignItems: 'center',
+        marginTop: 24, backgroundColor: colors.surface, borderRadius: radius.lg,
+        borderWidth: 1, borderColor: colors.border, alignItems: 'center',
         paddingVertical: 28, paddingHorizontal: 16,
+        ...shadow.card,
     },
     avatarWrapper: { position: 'relative', marginBottom: 16 },
-    avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#FF6200', justifyContent: 'center', alignItems: 'center', elevation: 3 },
-    avatarText: { color: '#FFFFFF', fontSize: 34, fontWeight: '600' },
+    avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', elevation: 3 },
+    avatarText: { color: colors.surface, fontSize: 34, fontWeight: '600' },
     editButton: {
         position: 'absolute', right: -4, bottom: 4, width: 30, height: 30, borderRadius: 15,
-        backgroundColor: '#FF6200', justifyContent: 'center', alignItems: 'center',
-        borderWidth: 2, borderColor: '#FFFFFF',
+        backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center',
+        borderWidth: 2, borderColor: colors.surface,
     },
-    editText: { color: '#FFFFFF', fontSize: 12 },
-    name: { fontSize: 20, fontWeight: '700', color: '#202020' },
-    phone: { marginTop: 6, fontSize: 16, color: '#6B4E3D' },
-    statsDivider: { height: 1, backgroundColor: '#F0EBE7', alignSelf: 'stretch', marginTop: 20, marginBottom: 16 },
+    editText: { color: colors.surface, fontSize: 12 },
+    name: { fontSize: 20, fontWeight: '700', color: colors.ink },
+    phone: { marginTop: 6, fontSize: 16, color: colors.inkMuted },
+    statsDivider: { height: 1, backgroundColor: colors.border, alignSelf: 'stretch', marginTop: 20, marginBottom: 16 },
     statsLoader: { marginTop: 4 },
     statsRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch', justifyContent: 'center' },
     statItem: { alignItems: 'center', paddingHorizontal: 24 },
-    statSeparator: { width: 1, height: 32, backgroundColor: '#F0EBE7' },
-    statNum: { fontSize: 22, fontWeight: '800', color: '#FF6200' },
-    statLabel: { fontSize: 12, color: '#8A7A72', fontWeight: '600', marginTop: 3 },
-    heading: { marginTop: 28, fontSize: 22, fontWeight: '700', color: '#202020' },
-    description: { marginTop: 6, fontSize: 16, lineHeight: 26, color: '#6B4E3D', marginBottom: 20 },
-    settingsCard: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#F3C8B6', marginBottom: 18, overflow: 'hidden' },
+    statSeparator: { width: 1, height: 32, backgroundColor: colors.border },
+    statNum: { fontSize: 22, fontWeight: '800', color: colors.primary },
+    statLabel: { fontSize: 12, color: colors.inkSoft, fontWeight: '600', marginTop: 3 },
+    heading: { marginTop: 28, fontSize: 22, fontWeight: '700', color: colors.ink },
+    description: { marginTop: 6, fontSize: 16, lineHeight: 26, color: colors.inkMuted, marginBottom: 20 },
+    settingsCard: { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, marginBottom: 18, overflow: 'hidden' },
     settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 18 },
     leftSection: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-    iconCircle: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#F1F1F1', justifyContent: 'center', alignItems: 'center', marginRight: 14 },
-    settingTitle: { fontSize: 18, fontWeight: '600', color: '#202020' },
-    subtitle: { marginTop: 2, fontSize: 13, color: '#7A6A61' },
-    arrow: { fontSize: 28, color: '#8C6F63' },
-    divider: { height: 1, backgroundColor: '#ECECEC', marginLeft: 72 },
+    iconCircle: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primaryLight, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
+    settingTitle: { fontSize: 18, fontWeight: '600', color: colors.ink },
+    subtitle: { marginTop: 2, fontSize: 13, color: colors.inkSoft },
+    arrow: { fontSize: 28, color: colors.inkSoft },
+    divider: { height: 1, backgroundColor: colors.border, marginLeft: 72 },
     logoutButton: {
-        marginTop: 8, marginBottom: 30, backgroundColor: '#FCE0DB', height: 56, borderRadius: 14,
+        marginTop: 8, marginBottom: 30, backgroundColor: colors.dangerBg, height: 56, borderRadius: 14,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     },
-    logoutText: { color: '#93000A', fontSize: 17, fontWeight: '600' },
+    logoutText: { color: colors.danger, fontSize: 17, fontWeight: '600' },
 });

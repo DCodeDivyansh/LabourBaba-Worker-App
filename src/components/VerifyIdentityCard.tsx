@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors, radius, spacing, typography } from '../theme/theme';
 
 const VerifyIdentityCard = () => {
   return (
@@ -17,33 +18,34 @@ export default VerifyIdentityCard;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FF6200',
-    borderRadius: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 24,
-    margin: 16,
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.xxl,
+    margin: spacing.lg,
 
-    shadowColor: '#000',
+    shadowColor: colors.primaryDark,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
   },
 
   title: {
-    color: '#FFFFFF',
-    fontSize: 32,
-    fontWeight: '700',
-    marginBottom: 8,
+    color: colors.surface,
+    fontSize: typography.h1.fontSize,
+    fontWeight: typography.h1.fontWeight,
+    marginBottom: spacing.sm,
   },
 
   subtitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    lineHeight: 28,
+    color: colors.surface,
+    fontSize: 17,
+    lineHeight: 26,
     fontWeight: '400',
+    opacity: 0.95,
   },
 });
