@@ -9,7 +9,14 @@ export async function createJobOfferChannel() {
     importance: AndroidImportance.HIGH,
     sound: 'ringtone', // matches android/app/src/main/res/raw/ringtone.mp3 — no file extension here
     vibration: true,
-    vibrationPattern: [0, 400, 200, 400, 600], // same pattern used in services/ringtone.ts
+    // ⬅ FIXED: was [0, 400, 200, 400, 600] — 5 values, an odd count, which
+    // notifee rejects outright ('expected an array containing an even
+    // number of positive values'). The array must alternate
+    // pause/vibrate/pause/vibrate/... in pairs. This was silently crashing
+    // createChannel() on every app launch, meaning the "job-offers" channel
+    // never actually got created — which is the real reason no custom
+    // ringtone sound was playing on background/killed notifications.
+    vibrationPattern: [0, 400, 200, 400, 200, 600],
     visibility: AndroidVisibility.PUBLIC,
     bypassDnd: true,
   });

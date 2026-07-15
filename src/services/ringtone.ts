@@ -13,7 +13,7 @@ try {
 let ringtoneInstance: any = null;
 
 // Uber-style buzz: short-long-pause, repeated until stopped.
-const VIBRATION_PATTERN = [0, 400, 200, 400, 600];
+const VIBRATION_PATTERN = [0, 400, 200, 400, 200, 600];
 
 export const startRinging = () => {
   // Haptic buzz — works out of the box, no native setup required.
