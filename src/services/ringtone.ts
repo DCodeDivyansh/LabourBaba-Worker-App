@@ -1,22 +1,20 @@
 import { Platform, Vibration } from "react-native";
 
-// react-native-sound is an optional native dependency. It's wrapped in a
-// try/catch so the app doesn't crash if it hasn't been installed/linked yet
-// (see README notes at the bottom of IncomingJobScreen for setup steps).
 let Sound: any = null;
 try {
   Sound = require("react-native-sound").default;
+  console.log("[ringtone] react-native-sound module loaded successfully");
 } catch (e) {
   Sound = null;
+  console.log("[ringtone] Failed to require react-native-sound:", e);
 }
 
 let ringtoneInstance: any = null;
 
-// Uber-style buzz: short-long-pause, repeated until stopped.
-const VIBRATION_PATTERN = [0, 400, 200, 400, 200, 600];
+const VIBRATION_PATTERN = [0, 400, 200, 400, 600];
 
 export const startRinging = () => {
-  // Haptic buzz — works out of the box, no native setup required.
+  console.log("[ringtone] startRinging() called"); // ⬅ NEW
   Vibration.vibrate(VIBRATION_PATTERN, true);
 
   if (!Sound) {
@@ -29,37 +27,40 @@ export const startRinging = () => {
 
   try {
     Sound.setCategory("Playback");
+    console.log("[ringtone] Sound.setCategory('Playback') succeeded"); // ⬅ NEW
 
-    // ringtone.mp3 must be placed in:
-    //  Android: android/app/src/main/res/raw/ringtone.mp3
-    //  iOS: added to the Xcode project as a bundled resource
     ringtoneInstance = new Sound(
       "ringtone.mp3",
       Platform.OS === "android" ? Sound.MAIN_BUNDLE : undefined,
       (error: any) => {
         if (error) {
-          console.log("[ringtone] Failed to load ringtone.mp3:", error.message);
+          console.log("[ringtone] Failed to load ringtone.mp3:", JSON.stringify(error)); // ⬅ CHANGED: stringify so nested error objects aren't silently blank
           ringtoneInstance = null;
           return;
         }
 
+        console.log("[ringtone] ringtone.mp3 loaded successfully, duration:", ringtoneInstance?.getDuration?.()); // ⬅ NEW
+
         if (ringtoneInstance) {
-          ringtoneInstance.setNumberOfLoops(-1); // loop forever, like an incoming call
+          ringtoneInstance.setNumberOfLoops(-1);
           ringtoneInstance.setVolume(1.0);
           ringtoneInstance.play((success: boolean) => {
+            console.log("[ringtone] play() callback fired, success:", success); // ⬅ NEW
             if (!success) {
               console.log("[ringtone] Playback failed");
             }
           });
+          console.log("[ringtone] play() was called"); // ⬅ NEW — confirms we actually reached this line
         }
       }
     );
   } catch (err) {
-    console.log("[ringtone] Unexpected error starting ringtone:", err);
+    console.log("[ringtone] Unexpected error starting ringtone:", err); // existing, kept
   }
 };
 
 export const stopRinging = () => {
+  console.log("[ringtone] stopRinging() called"); // ⬅ NEW
   Vibration.cancel();
 
   if (ringtoneInstance) {

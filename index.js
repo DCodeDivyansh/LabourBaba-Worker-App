@@ -7,7 +7,7 @@ import messaging from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 import App from './App';
 import { name as appName } from './app.json';
-import { displayJobOfferNotification } from './src/services/notifee';
+import { displayJobOfferNotification, createJobOfferChannel } from './src/services/notifee'; // ⬅ CHANGED
 import { acceptDispatch, declineDispatch } from './src/services/dispatch';
 
 // Required for FCM messages arriving while the app is backgrounded or fully
@@ -20,16 +20,40 @@ import { acceptDispatch, declineDispatch } from './src/services/dispatch';
 // gives us the custom "job-offers" channel, the custom ringtone sound, and
 // the in-notification Accept/Reject action buttons.
 messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-  const data = remoteMessage?.data;
-  if (data?.requirementId) {
+  // ⬅ NEW: confirms the handler actually fired at all — if this line never
+  // shows up in `adb logcat`, the push isn't reaching the device/OS layer,
+  // which is a backend/FCM problem, not anything in this file.
+  console.log('[FCM background] Handler invoked:', JSON.stringify(remoteMessage?.data));
+
+  try {
+    const data = remoteMessage?.data;
+    if (!data?.requirementId) {
+      console.log('[FCM background] Received message with no requirementId:', remoteMessage);
+      return;
+    }
+
+    // ⬅ NEW: when the app is fully killed, this background handler runs in
+    // a separate "headless" JS context that never mounts App.tsx —
+    // meaning IncomingJobListener's channel-creation useEffect never runs
+    // here. createChannel() is a safe no-op if it already exists, so it's
+    // fine (and necessary) to call it every time right before displaying.
+    await createJobOfferChannel();
+    console.log('[FCM background] Channel ensured, displaying notification...');
+
     await displayJobOfferNotification({
       requirementId: String(data.requirementId),
       jobId: String(data.jobId || ''),
       skillType: data.skillType ? String(data.skillType) : undefined,
       ratePerDay: data.ratePerDay ? String(data.ratePerDay) : undefined,
+      expiresAt: data.expiresAt ? String(data.expiresAt) : undefined,
     });
-  } else {
-    console.log('[FCM background] Received message with no requirementId:', remoteMessage);
+
+    console.log('[FCM background] Notification displayed successfully');
+  } catch (err) {
+    // ⬅ NEW: previously an error here (e.g. a bad notifee call) would
+    // reject silently with nothing in logcat pointing at it. Now it's
+    // impossible to miss.
+    console.log('[FCM background] FAILED to display notification:', err);
   }
 });
 
