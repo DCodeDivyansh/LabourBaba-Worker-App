@@ -11,8 +11,9 @@ import {
   Alert,
 } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // ⬅ CHANGED: added useSafeAreaInsets
 import { useNavigation, useRoute } from '@react-navigation/native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // ⬅ NEW
 import TopAppBar from '../../components/TopAppBar';
 import TickIcon from '../../../assets/TickIcon.svg';
 import LocationIcon from '../../../assets/Location.svg';
@@ -22,9 +23,10 @@ import NavigateIcon from '../../../assets/Navigateicon.svg';
 import CancelJobModal from './CancelJobModal';
 import { useTranslation } from 'react-i18next';
 import { getCurrentLocation } from '../../services/location';
-import { getBookingDetail, getWorkerBookings, completeBooking, verifyOtp, cancelBooking } from '../../services/booking'; // ⬅ CHANGED
-import { emitJobCompleted, emitJobCancelled } from '../../services/events'; // ⬅ CHANGED
-import OtpVerifyModal from '../../components/OtpVerifyModal'; // ⬅ NEW
+import { getBookingDetail, getWorkerBookings, completeBooking, verifyOtp, cancelBooking } from '../../services/booking';
+import { emitJobCompleted, emitJobCancelled } from '../../services/events';
+import OtpVerifyModal from '../../components/OtpVerifyModal';
+import { colors, radius, shadow } from '../../theme/theme'; // ⬅ NEW: unify with the rest of the app's design system
 
 // Haversine distance in km between two lat/lng points.
 const distanceKm = (lat1, lon1, lat2, lon2) => {
@@ -75,6 +77,7 @@ const JobDetailsScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const route = useRoute();
+  const insets = useSafeAreaInsets(); // ⬅ NEW
   const { bookingId, booking: initialBooking } = route.params || {};
 
   const [booking, setBooking] = useState(initialBooking || null);
@@ -83,15 +86,14 @@ const JobDetailsScreen = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [completing, setCompleting] = useState(false);
 
-  const [showOtpModal, setShowOtpModal] = useState(false); // ⬅ NEW
-  const [verifyingOtp, setVerifyingOtp] = useState(false); // ⬅ NEW
-  const [cancelling, setCancelling] = useState(false); // ⬅ NEW
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     const loadBookingData = async () => {
       try {
         let active = initialBooking;
-        // Unwrap nested booking if it is wrapped in response data
         if (active && active.booking) {
           active = active.booking;
         }
@@ -161,7 +163,6 @@ const JobDetailsScreen = () => {
     }
   };
 
-  // ⬅ NEW: OTP must succeed before completeBooking can ever succeed server-side
   const handleOtpSubmit = async (otp) => {
     if (verifyingOtp || !booking?.id) return;
     setVerifyingOtp(true);
@@ -180,7 +181,6 @@ const JobDetailsScreen = () => {
     }
   };
 
-  // ⬅ NEW: was console.log stub — now actually calls the backend
   const handleCancelConfirm = async (reasonId) => {
     if (cancelling || !booking?.id) return;
     const reasonText = t(`jobs.cancelModal.reasons.${reasonId}`, reasonId);
@@ -219,16 +219,10 @@ const JobDetailsScreen = () => {
 
               const response = await completeBooking(booking.id);
 
-              // ⬅ FIXED: only treat this as success if the backend actually
-              // confirms it. Previously any error was caught, logged, and the
-              // screen still navigated to JobCompleted as if it worked.
               if (response?.success === false) {
                 throw new Error(response?.message || 'Failed to complete job');
               }
 
-              // ⬅ NEW: broadcast so any mounted screen (dashboard, jobs list,
-              // profile stats) can update immediately without waiting for a
-              // manual refresh or screen focus.
               emitJobCompleted(booking.id);
 
               setCompleting(false);
@@ -250,7 +244,7 @@ const JobDetailsScreen = () => {
   if (loading) {
     return (
       <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#FF5A00" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -266,7 +260,6 @@ const JobDetailsScreen = () => {
     );
   }
 
-  // ── Real data extraction ──────────────────────────────────────────────────
   const customerName = booking.customer?.name || 'Customer';
   const customerPhone = booking.customer?.phone || null;
   const customerInitials = getInitials(customerName);
@@ -278,12 +271,12 @@ const JobDetailsScreen = () => {
     booking.job_requirement?.skill_type || booking.job?.skill_type || '—';
   const scheduledDate = booking.scheduled_at || booking.created_at;
 
-  // ⬅ FIXED: real backend statuses are 'confirmed' (lowercase, pre-OTP),
-  // 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'. There is no 'done'/'otp_pending'.
   const statusLower = booking.status?.toLowerCase() || '';
   const isCompleted = statusLower === 'completed';
   const isInProgress = statusLower === 'in_progress';
   const needsOtp = !isCompleted && !isInProgress;
+
+  const hasCoords = booking.job?.latitude != null && booking.job?.longitude != null;
 
   return (
     <View style={styles.container}>
@@ -291,7 +284,10 @@ const JobDetailsScreen = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 130 }}
+        // ⬅ CHANGED: extra bottom padding scoped to whatever the fixed
+        // bottomContainer actually ends up occupying (see below), so
+        // scroll content never sits underneath it regardless of device.
+        contentContainerStyle={{ paddingBottom: 140 + insets.bottom }}
       >
         {/* ── Status row ─────────────────────────────────────────────────── */}
         <View style={styles.statusRow}>
@@ -334,9 +330,8 @@ const JobDetailsScreen = () => {
             </View>
           </View>
 
-          {/* Quick call button */}
           {customerPhone ? (
-            <TouchableOpacity style={styles.quickCallBtn} onPress={handleCall}>
+            <TouchableOpacity style={styles.quickCallBtn} onPress={handleCall} activeOpacity={0.85}>
               <Text style={styles.quickCallText}>📞</Text>
             </TouchableOpacity>
           ) : null}
@@ -375,13 +370,44 @@ const JobDetailsScreen = () => {
 
         {/* ── Location card ───────────────────────────────────────────────── */}
         <View style={styles.locationCard}>
-          {booking.job?.latitude != null && booking.job?.longitude != null ? (
-            <Image
-              source={{
-                uri: `https://maps.googleapis.com/maps/api/staticmap?center=${booking.job.latitude},${booking.job.longitude}&zoom=14&size=600x300&markers=color:red%7C${booking.job.latitude},${booking.job.longitude}`,
-              }}
-              style={styles.map}
-            />
+          {hasCoords ? (
+            // ⬅ CHANGED: real interactive MapView instead of a static PNG.
+            // Wrapped in a TouchableOpacity that opens full turn-by-turn
+            // navigation on tap — pan/zoom gestures are intentionally
+            // disabled since this map sits inside a vertical ScrollView,
+            // and letting it capture scroll/pinch gestures there causes a
+            // frustrating gesture fight with the page scroll. Tapping
+            // through to the Google/Apple Maps app is the standard pattern
+            // for an embedded map preview like this.
+            <TouchableOpacity activeOpacity={0.9} onPress={handleNavigate}>
+              <MapView
+                style={styles.map}
+                provider={PROVIDER_GOOGLE}
+                initialRegion={{
+                  latitude: booking.job.latitude,
+                  longitude: booking.job.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                pitchEnabled={false}
+                rotateEnabled={false}
+                pointerEvents="none"
+              >
+                <Marker
+                  coordinate={{
+                    latitude: booking.job.latitude,
+                    longitude: booking.job.longitude,
+                  }}
+                  pinColor={colors.primary}
+                />
+              </MapView>
+
+              <View style={styles.mapTapHint}>
+                <Text style={styles.mapTapHintText}>Tap to open in Maps</Text>
+              </View>
+            </TouchableOpacity>
           ) : (
             <View style={styles.mapPlaceholder}>
               <Text style={styles.mapPlaceholderText}>📍 Map not available</Text>
@@ -400,7 +426,7 @@ const JobDetailsScreen = () => {
               <Text style={styles.distanceText}>📍 {distance} km away</Text>
             )}
 
-            <TouchableOpacity style={styles.navigateBtn} onPress={handleNavigate}>
+            <TouchableOpacity style={styles.navigateBtn} onPress={handleNavigate} activeOpacity={0.85}>
               <NavigateIcon />
               <Text style={styles.navigateText}>{t('jobs.jobDetails.navigate', 'Navigate')}</Text>
             </TouchableOpacity>
@@ -418,28 +444,27 @@ const JobDetailsScreen = () => {
 
       {/* ── Bottom Actions ───────────────────────────────────────────────── */}
       {!isCompleted && (
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
+        // ⬅ FIXED: paddingBottom now adds the device's real bottom safe-area
+        // inset on top of the base padding, instead of a fixed 16px that
+        // gets covered by the gesture bar / home indicator on many phones.
+        <View style={[styles.bottomContainer, { paddingBottom: 16 + insets.bottom }]}>
+          <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.85}>
             <Text style={styles.callText}>📞 {t('jobs.jobDetails.callCustomer', 'Call Customer')}</Text>
           </TouchableOpacity>
 
           <View style={styles.bottomRow}>
-            <TouchableOpacity
-              onPress={() => setShowCancelModal(true)}
-            >
+            <TouchableOpacity onPress={() => setShowCancelModal(true)}>
               <Text style={styles.cancelText}>{t('jobs.jobDetails.cancelJob', 'Cancel Job')}</Text>
             </TouchableOpacity>
 
             {needsOtp ? (
-              // ⬅ NEW: gate — a booking must reach IN_PROGRESS via OTP before
-              // completeBooking can succeed (enforced server-side in bookingServices).
-              <TouchableOpacity style={styles.completedBtn} onPress={() => setShowOtpModal(true)}>
+              <TouchableOpacity style={styles.completedBtn} onPress={() => setShowOtpModal(true)} activeOpacity={0.85}>
                 <Text style={styles.completedText}>🔑 Verify OTP to Start</Text>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity style={styles.completedBtn} onPress={handleComplete} disabled={completing}>
+              <TouchableOpacity style={styles.completedBtn} onPress={handleComplete} disabled={completing} activeOpacity={0.85}>
                 {completing ? (
-                  <ActivityIndicator size="small" color="#0B3D12" />
+                  <ActivityIndicator size="small" color={colors.success} />
                 ) : (
                   <>
                     <TickIcon />
@@ -453,7 +478,7 @@ const JobDetailsScreen = () => {
       )}
 
       {isCompleted && (
-        <View style={styles.bottomContainer}>
+        <View style={[styles.bottomContainer, { paddingBottom: 16 + insets.bottom }]}>
           <View style={styles.completedBanner}>
             <TickIcon />
             <Text style={styles.completedBannerText}>This job has been completed</Text>
@@ -464,10 +489,9 @@ const JobDetailsScreen = () => {
       <CancelJobModal
         visible={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirm={handleCancelConfirm} // ⬅ FIXED: was a console.log stub
+        onConfirm={handleCancelConfirm}
       />
 
-      {/* ⬅ NEW */}
       <OtpVerifyModal
         visible={showOtpModal}
         onClose={() => setShowOtpModal(false)}
@@ -483,7 +507,7 @@ export default JobDetailsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
+    backgroundColor: colors.background,
   },
 
   center: {
@@ -495,10 +519,9 @@ const styles = StyleSheet.create({
 
   noJobText: {
     fontSize: 18,
-    color: '#666',
+    color: colors.inkMuted,
   },
 
-  // ── Status row ─────────────────────────────────────────────────────────────
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -509,16 +532,16 @@ const styles = StyleSheet.create({
   },
 
   statusBadge: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: radius.pill,
   },
 
   statusBadgeCompleted: {
-    backgroundColor: '#1976D2',
+    backgroundColor: colors.info,
   },
 
   statusBadgeText: {
@@ -529,22 +552,22 @@ const styles = StyleSheet.create({
   },
 
   jobId: {
-    color: '#666',
+    color: colors.inkMuted,
     fontWeight: '600',
     fontSize: 14,
   },
 
-  // ── Customer card ─────────────────────────────────────────────────────────
   profileCard: {
     marginHorizontal: 16,
-    backgroundColor: '#FFF',
-    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#FFD7C2',
+    borderColor: colors.border,
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    ...shadow.card,
   },
 
   profileLeft: {
@@ -564,9 +587,9 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FFE0CC',
+    backgroundColor: colors.primaryLight,
     borderWidth: 2,
-    borderColor: '#FF5A00',
+    borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
@@ -575,18 +598,18 @@ const styles = StyleSheet.create({
   avatarInitials: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#FF5A00',
+    color: colors.primary,
   },
 
   name: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#222',
+    color: colors.ink,
   },
 
   phone: {
     fontSize: 14,
-    color: '#555',
+    color: colors.inkMuted,
     marginTop: 2,
   },
 
@@ -597,7 +620,7 @@ const styles = StyleSheet.create({
   },
 
   ratingText: {
-    color: '#555',
+    color: colors.inkMuted,
     fontSize: 13,
   },
 
@@ -605,7 +628,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FF5A00',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -614,7 +637,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
 
-  // ── Skill / Payment badges ────────────────────────────────────────────────
   skillRow: {
     flexDirection: 'row',
     marginHorizontal: 16,
@@ -623,36 +645,35 @@ const styles = StyleSheet.create({
   },
 
   skillBadge: {
-    backgroundColor: '#FFF0E5',
+    backgroundColor: colors.primaryLight,
     borderWidth: 1,
-    borderColor: '#FFD7C2',
+    borderColor: colors.border,
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 20,
+    borderRadius: radius.pill,
   },
 
   skillText: {
-    color: '#FF5A00',
+    color: colors.primary,
     fontWeight: '700',
     fontSize: 13,
   },
 
   paymentBadge: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: colors.successBg,
     borderWidth: 1,
     borderColor: '#C8E6C9',
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 20,
+    borderRadius: radius.pill,
   },
 
   paymentText: {
-    color: '#2E7D32',
+    color: colors.success,
     fontWeight: '700',
     fontSize: 13,
   },
 
-  // ── Schedule & Budget cards ───────────────────────────────────────────────
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -662,11 +683,12 @@ const styles = StyleSheet.create({
 
   infoCard: {
     width: '48%',
-    backgroundColor: '#FFF',
-    borderRadius: 16,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#FFD7C2',
+    borderColor: colors.border,
     padding: 16,
+    ...shadow.card,
   },
 
   cardLabel: {
@@ -676,7 +698,7 @@ const styles = StyleSheet.create({
 
   cardLabelText: {
     marginLeft: 6,
-    color: '#FF5A00',
+    color: colors.primary,
     fontWeight: '700',
     fontSize: 12,
   },
@@ -684,41 +706,58 @@ const styles = StyleSheet.create({
   bigText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FF5A00',
+    color: colors.ink,
     marginTop: 12,
   },
 
   smallText: {
-    color: '#FF7A2E',
+    color: colors.inkSoft,
     marginTop: 4,
     fontSize: 12,
     lineHeight: 18,
   },
 
-  // ── Location card ─────────────────────────────────────────────────────────
   locationCard: {
     margin: 16,
-    backgroundColor: '#FFF',
-    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#FFD7C2',
+    borderColor: colors.border,
+    ...shadow.card,
   },
 
   map: {
     width: '100%',
-    height: 160,
+    height: 170,
+  },
+
+  // ⬅ NEW: small overlay chip confirming the map preview is tappable
+  mapTapHint: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+  },
+
+  mapTapHintText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '600',
   },
 
   mapPlaceholder: {
     height: 100,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFF8F5',
+    backgroundColor: colors.primaryLight,
   },
 
   mapPlaceholderText: {
-    color: '#FF5A00',
+    color: colors.primary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -736,27 +775,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginLeft: 8,
+    color: colors.ink,
   },
 
   address: {
     marginTop: 10,
     fontSize: 16,
-    color: '#555',
+    color: colors.inkMuted,
     lineHeight: 24,
   },
 
   distanceText: {
     marginTop: 8,
     fontSize: 14,
-    color: '#FF5A00',
+    color: colors.primary,
     fontWeight: '700',
   },
 
   navigateBtn: {
     height: 46,
-    borderRadius: 23,
+    borderRadius: radius.pill,
     borderWidth: 2,
-    borderColor: '#FF5A00',
+    borderColor: colors.primary,
     marginTop: 14,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -765,47 +805,53 @@ const styles = StyleSheet.create({
 
   navigateText: {
     marginLeft: 8,
-    color: '#FF5A00',
+    color: colors.primary,
     fontWeight: '700',
     fontSize: 16,
   },
 
-  // ── Description card ──────────────────────────────────────────────────────
   descCard: {
     marginHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: '#FFF',
-    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: colors.border,
     padding: 16,
   },
 
   descTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#222',
+    color: colors.ink,
     marginBottom: 8,
   },
 
   descText: {
     fontSize: 15,
-    color: '#555',
+    color: colors.inkMuted,
     lineHeight: 22,
   },
 
-  // ── Bottom actions ────────────────────────────────────────────────────────
+  // ⬅ FIXED: bottom safe-area handling is now applied inline where this
+  // style is used (paddingBottom: 16 + insets.bottom), since StyleSheet
+  // objects can't reference hook values directly.
   bottomContainer: {
-    backgroundColor: '#FFF',
-    padding: 16,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     borderTopWidth: 1,
-    borderColor: '#EEE',
+    borderColor: colors.border,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 
   callBtn: {
     height: 52,
-    borderRadius: 26,
-    backgroundColor: '#FF5A00',
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -824,16 +870,18 @@ const styles = StyleSheet.create({
   },
 
   cancelText: {
-    color: '#D32F2F',
+    color: colors.danger,
     fontWeight: '700',
     fontSize: 16,
   },
 
   completedBtn: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.successBg,
+    borderWidth: 1,
+    borderColor: colors.success,
     paddingHorizontal: 20,
     paddingVertical: 11,
-    borderRadius: 22,
+    borderRadius: radius.pill,
     flexDirection: 'row',
     alignItems: 'center',
     minWidth: 80,
@@ -842,7 +890,7 @@ const styles = StyleSheet.create({
 
   completedText: {
     marginLeft: 6,
-    color: '#0B3D12',
+    color: colors.success,
     fontWeight: '700',
     fontSize: 15,
   },
@@ -851,14 +899,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E8F5E9',
-    borderRadius: 12,
+    backgroundColor: colors.successBg,
+    borderRadius: radius.md,
     padding: 14,
   },
 
   completedBannerText: {
     marginLeft: 8,
-    color: '#2E7D32',
+    color: colors.success,
     fontWeight: '700',
     fontSize: 16,
   },

@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // ⬅ NEW
 
 import { startRinging, stopRinging } from '../../services/ringtone';
 import {
@@ -21,13 +22,21 @@ import {
   declineDispatch,
 } from '../../services/dispatch';
 import { getCurrentLocation } from '../../services/location';
-import { socket } from '../../services/socket'; // ⬅ FIXED: use your real shared socket instance
+import { socket } from '../../services/socket';
 
-const WAVE_TIMEOUT_S = 30; // matches backend WAVE_TIMEOUT_MS
-const AVG_SPEED_KMPH = 25; // rough city-traffic estimate, used only for the "min away" hint
-const AUTO_DISMISS_MS = 1600; // how long to show "already taken" before closing
+const WAVE_TIMEOUT_S = 30;
+const AVG_SPEED_KMPH = 25;
+const AUTO_DISMISS_MS = 1600;
 
-// Haversine distance in km between two lat/lng points.
+// India-wide fallback so the map isn't blank/zero-zero before real
+// coordinates resolve.
+const FALLBACK_REGION = {
+  latitude: 20.5937,
+  longitude: 78.9629,
+  latitudeDelta: 8,
+  longitudeDelta: 8,
+};
+
 const distanceKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -55,15 +64,19 @@ const IncomingJobScreen = () => {
 
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [customer, setCustomer] = useState(null);
-  const [distance, setDistance] = useState(null); // { km, mins }
-  const [actionLoading, setActionLoading] = useState(false); // accept/decline in-flight
+  const [distance, setDistance] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(WAVE_TIMEOUT_S);
-  const [takenByOther, setTakenByOther] = useState(false); // ⬅ NEW
+  const [takenByOther, setTakenByOther] = useState(false);
+
+  // ⬅ NEW: coordinates for the background map
+  const [jobCoords, setJobCoords] = useState(null); // { latitude, longitude } of the job site
+  const [workerCoords, setWorkerCoords] = useState(null); // worker's own current position
 
   const resolvedRef = useRef(false);
   const pulse = useRef(new Animated.Value(0)).current;
+  const mapRef = useRef(null); // ⬅ NEW
 
-  // ── Resolve once (accept, decline, expire, or unmount) ──────────────────
   const resolve = useCallback(() => {
     if (resolvedRef.current) return;
     resolvedRef.current = true;
@@ -71,7 +84,6 @@ const IncomingJobScreen = () => {
     if (onResolved) onResolved();
   }, [onResolved]);
 
-  // ── Ringtone + vibration, like an incoming Uber ride ─────────────────────
   useEffect(() => {
     startRinging();
     return () => {
@@ -80,16 +92,11 @@ const IncomingJobScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Block hardware back button — worker must accept/decline ─────────────
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
     return () => sub.remove();
   }, []);
 
-  // ⬅ FIXED: the real event is 'job:closed' — sent to worker:${losingWorkerId}
-  // with { requirementId, jobId, reason: 'filled' } — confirmed in
-  // dispatchServices.ts. 'job:fully_booked' only goes to the customer's room
-  // and never reaches a worker.
   useEffect(() => {
     const handleJobClosed = (payload) => {
       const matchesThisJob =
@@ -114,7 +121,6 @@ const IncomingJobScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requirementId, jobId, navigation, resolve]);
 
-  // ── Gentle pulse on the bell pill, like a ring animation ─────────────────
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
@@ -138,9 +144,8 @@ const IncomingJobScreen = () => {
 
   const bellScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
 
-  // ── Countdown based on the wave's expiresAt timestamp ────────────────────
   useEffect(() => {
-    if (takenByOther) return; // ⬅ NEW: stop counting once we know it's gone
+    if (takenByOther) return;
 
     const expiryTime = expiresAt ? new Date(expiresAt).getTime() : Date.now() + WAVE_TIMEOUT_S * 1000;
 
@@ -159,7 +164,6 @@ const IncomingJobScreen = () => {
     return () => clearInterval(interval);
   }, [expiresAt, navigation, resolve, takenByOther]);
 
-  // ── Fetch full job + customer detail via the job APIs ────────────────────
   useEffect(() => {
     let isMounted = true;
 
@@ -172,8 +176,13 @@ const IncomingJobScreen = () => {
           setCustomer(job.customer || null);
 
           if (job.latitude != null && job.longitude != null) {
+            const jobLoc = { latitude: job.latitude, longitude: job.longitude }; // ⬅ NEW
+            setJobCoords(jobLoc); // ⬅ NEW
+
             try {
               const here = await getCurrentLocation();
+              setWorkerCoords({ latitude: here.latitude, longitude: here.longitude }); // ⬅ NEW
+
               const km = distanceKm(here.latitude, here.longitude, job.latitude, job.longitude);
               setDistance({
                 km: km.toFixed(1),
@@ -196,9 +205,25 @@ const IncomingJobScreen = () => {
     };
   }, [requirementId]);
 
-  // ── Actions ───────────────────────────────────────────────────────────────
+  // ⬅ NEW: once both pins are known, frame the map so job site + worker
+  // position are both comfortably in view — the same "fit the ride" feel
+  // Uber/Ola use on their incoming-request screen.
+  useEffect(() => {
+    if (jobCoords && workerCoords && mapRef.current) {
+      mapRef.current.fitToCoordinates([jobCoords, workerCoords], {
+        edgePadding: { top: 120, right: 80, bottom: 380, left: 80 },
+        animated: true,
+      });
+    } else if (jobCoords && mapRef.current) {
+      mapRef.current.animateToRegion(
+        { ...jobCoords, latitudeDelta: 0.02, longitudeDelta: 0.02 },
+        500
+      );
+    }
+  }, [jobCoords, workerCoords]);
+
   const handleAccept = async () => {
-    if (actionLoading || takenByOther || !requirementId) return; // ⬅ guard added
+    if (actionLoading || takenByOther || !requirementId) return;
     setActionLoading(true);
     try {
       const response = await acceptDispatch(requirementId);
@@ -208,9 +233,6 @@ const IncomingJobScreen = () => {
       console.log('[IncomingJobScreen] Accept failed:', err?.message);
       setActionLoading(false);
 
-      // ⬅ NEW: if the backend rejects because someone else already took it,
-      // treat it the same as the socket event (covers the race where the
-      // event arrives slightly after our own accept request).
       if (err?.response?.status === 409 || err?.code === 'JOB_ALREADY_TAKEN') {
         setTakenByOther(true);
         setTimeout(() => {
@@ -222,7 +244,7 @@ const IncomingJobScreen = () => {
   };
 
   const handleDecline = async () => {
-    if (actionLoading || takenByOther || !requirementId) return; // ⬅ guard added
+    if (actionLoading || takenByOther || !requirementId) return;
     setActionLoading(true);
     try {
       await declineDispatch(requirementId);
@@ -237,12 +259,24 @@ const IncomingJobScreen = () => {
 
   const timeUp = secondsLeft <= 5;
 
-  // ⬅ NEW: early-return a small "already taken" version of the card
   if (takenByOther) {
     return (
       <View style={styles.backdrop}>
+        {/* ⬅ NEW: map stays visible behind the "already taken" state too, for continuity */}
+        <MapView
+          style={StyleSheet.absoluteFillObject}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={jobCoords ? { ...jobCoords, latitudeDelta: 0.02, longitudeDelta: 0.02 } : FALLBACK_REGION}
+          showsUserLocation
+          showsMyLocationButton={false}
+          pointerEvents="none"
+        >
+          {jobCoords && <Marker coordinate={jobCoords} pinColor="#FF5A00" />}
+        </MapView>
+
         <SafeAreaView style={styles.safe} edges={['bottom']}>
           <View style={styles.card}>
+            <View style={styles.dragHandle} />
             <View style={styles.takenWrap}>
               <Text style={styles.takenEmoji}>⚡</Text>
               <Text style={styles.takenTitle}>
@@ -263,8 +297,34 @@ const IncomingJobScreen = () => {
 
   return (
     <View style={styles.backdrop}>
+      {/* ⬅ NEW: full-screen live map background — the Uber-style incoming
+          request treatment. Fully interactive (pan/zoom) since this is the
+          screen's own backdrop, not embedded inside a scrollable page like
+          the Job Details map, so there's no gesture conflict to worry about. */}
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFillObject}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={FALLBACK_REGION}
+        showsUserLocation
+        showsMyLocationButton={false}
+        showsCompass={false}
+        toolbarEnabled={false}
+      >
+        {jobCoords && (
+          <Marker coordinate={jobCoords} pinColor="#FF5A00" title={customer?.name || 'Job location'} />
+        )}
+      </MapView>
+
+      {/* ⬅ NEW: soft top scrim so a status bar / future header content
+          stays legible over bright map tiles — subtle, not a full overlay */}
+      <View style={styles.topScrim} pointerEvents="none" />
+
       <SafeAreaView style={styles.safe} edges={['bottom']}>
         <View style={styles.card}>
+          {/* ⬅ NEW: native-feeling bottom-sheet drag handle */}
+          <View style={styles.dragHandle} />
+
           {/* Alert pill */}
           <View style={styles.alertPillWrap}>
             <Animated.View style={[styles.alertPill, { transform: [{ scale: bellScale }] }]}>
@@ -369,8 +429,20 @@ export default IncomingJobScreen;
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 15, 20, 0.55)',
+    // ⬅ CHANGED: was a solid dark rgba overlay — now transparent so the
+    // full-screen map shows through. The opaque card below still provides
+    // full contrast/legibility for its own content.
+    backgroundColor: '#E8E8E8', // neutral placeholder tone while map tiles load in
     justifyContent: 'flex-end',
+  },
+  // ⬅ NEW
+  topScrim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 90,
+    backgroundColor: 'rgba(0,0,0,0.12)',
   },
   safe: { width: '100%' },
   card: {
@@ -379,17 +451,25 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    paddingTop: 0,
+    paddingTop: 12, // ⬅ CHANGED: was 0 — small room for the new drag handle
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: -6 }, // ⬅ CHANGED: slightly deeper shadow now that it visually floats over a map
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 16,
   },
-  // ⬅ NEW styles for the "already taken" state
+  // ⬅ NEW
+  dragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#D9D3CE',
+    alignSelf: 'center',
+    marginBottom: 14,
+  },
   takenWrap: {
     paddingVertical: 40,
-    paddingTop: 24,
+    paddingTop: 12,
     alignItems: 'center',
   },
   takenEmoji: { fontSize: 34, marginBottom: 10 },
@@ -405,7 +485,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 24,
   },
-  alertPillWrap: { alignItems: 'center', marginTop: -18, marginBottom: 18 },
+  alertPillWrap: { alignItems: 'center', marginBottom: 18 }, // ⬅ CHANGED: removed negative marginTop, now sits below the drag handle instead of overlapping the card edge
   alertPill: {
     flexDirection: 'row',
     alignItems: 'center',
