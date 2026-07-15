@@ -318,9 +318,9 @@ const IncomingJobScreen = () => {
 
       {/* ⬅ NEW: soft top scrim so a status bar / future header content
           stays legible over bright map tiles — subtle, not a full overlay */}
-      <View style={styles.topScrim} pointerEvents="none" />
+      {/* <View style={styles.topScrim} pointerEvents="none" /> */}
 
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
+      {/* <SafeAreaView style={styles.safe} edges={['bottom']}> */}
         <View style={styles.card}>
           {/* ⬅ NEW: native-feeling bottom-sheet drag handle */}
           <View style={styles.dragHandle} />
@@ -419,7 +419,7 @@ const IncomingJobScreen = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      {/* </SafeAreaView> */}
     </View>
   );
 };
