@@ -16,7 +16,7 @@ export async function createJobOfferChannel() {
     // createChannel() on every app launch, meaning the "job-offers" channel
     // never actually got created — which is the real reason no custom
     // ringtone sound was playing on background/killed notifications.
-    vibrationPattern: [0, 400, 200, 400, 200, 600],
+    vibrationPattern: [400, 200, 400, 200, 400, 600],
     visibility: AndroidVisibility.PUBLIC,
     bypassDnd: true,
   });
