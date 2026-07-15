@@ -52,3 +52,13 @@ export function onNotificationOpenedApp(callback: (remoteMessage: any) => void) 
 export async function getInitialNotification() {
     return messaging().getInitialNotification();
 }
+
+
+export async function hasNotificationPermission(): Promise<boolean> {
+    const authStatus = await messaging().requestPermission();
+
+    return (
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL
+    );
+}

@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     ScrollView,
     ActivityIndicator,
+    Linking, // ⬅ NEW
 } from 'react-native';
 import LanguageIcon from '../../assets/LanguageIcon.svg'
 import NotificationIcon from '../../assets/NotificationIcon3.svg'
@@ -19,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../translations/i18n';
 import { getWorkerBookings } from '../services/booking';
 import { onJobCompleted } from '../services/events'; // ⬅ NEW
+import { hasNotificationPermission } from '../services/firebase'; // ⬅ NEW
 import { colors, radius, shadow } from '../theme/theme';
 
 const isCompleted = (status) => {
@@ -60,6 +62,7 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
     const [statsLoading, setStatsLoading] = useState(true);
     const [completedCount, setCompletedCount] = useState(0);
     const [totalCount, setTotalCount] = useState(0);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(null); // ⬅ NEW
 
     const fetchStats = useCallback(async () => {
         try {
@@ -79,6 +82,12 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
     useFocusEffect(
         useCallback(() => {
             fetchStats();
+            // ⬅ NEW: re-checks every time the worker comes back to this
+            // screen — including right after returning from the OS
+            // notification settings page, so the status shown is never stale.
+            hasNotificationPermission()
+                .then(setNotificationsEnabled)
+                .catch(() => setNotificationsEnabled(null));
         }, [fetchStats])
     );
 
@@ -119,6 +128,14 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
     // ⬅ FIXED: 'JobsHistory' isn't a registered route — the jobs list lives at
     // the 'Jobs' tab inside 'MainTabs' (see MainTabs.jsx).
     const MoveToJobHistory = () => navigation.navigate('MainTabs', { screen: 'Jobs' });
+
+    // ⬅ NEW: this row previously had no onPress at all. There's no API to
+    // re-trigger the OS permission dialog once it's been denied — the only
+    // way back in is the app's own notification settings page, which
+    // Linking.openSettings() opens directly (works on both platforms).
+    const handleNotificationSettingsPress = () => {
+        Linking.openSettings();
+    };
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -175,6 +192,14 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
                 <SettingItem
                     icon={<NotificationIcon width={22} height={22} />}
                     title={t('profile.content.notificationSettings')}
+                    subtitle={
+                        notificationsEnabled === null
+                            ? undefined
+                            : notificationsEnabled
+                                ? t('profile.content.notificationsEnabled', 'Enabled')
+                                : t('profile.content.notificationsDisabled', 'Off — tap to enable')
+                    }
+                    onPress={handleNotificationSettingsPress}
                     showDivider={false}
                 />
             </View>

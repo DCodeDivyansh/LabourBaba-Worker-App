@@ -13,7 +13,11 @@ class MainActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     RNBootSplash.init(this, R.style.BootTheme)
-    super.onCreate(savedInstanceState)
+    // ⬅ FIXED: must be `null`, not `savedInstanceState` — this is a
+    // documented requirement of react-native-bootsplash v6/v7. Passing the
+    // real saved state here conflicts with how ReactActivity restores its
+    // Fragment on cold start and crashes the app immediately after launch.
+    super.onCreate(null)
 
     // ⬅ NEW: lets an incoming-job full-screen notification (see
     // notifee.ts's fullScreenAction) pop this activity straight over the

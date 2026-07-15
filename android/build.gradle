@@ -20,3 +20,20 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// ⬅ NEW: react-native-geolocation-service's native module
+// (com.agontuk.RNFusedLocation) was compiled against play-services-location
+// 21.0.1's API shape. Without this pin, Firebase's google-services Gradle
+// plugin (applied above) resolves a newer, binary-incompatible version of
+// the same library, causing a runtime crash the moment getCurrentLocation()
+// is called:
+//   java.lang.IncompatibleClassChangeError: Found interface
+//   com.google.android.gms.location.FusedLocationProviderClient, but class
+//   was expected
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force 'com.google.android.gms:play-services-location:21.0.1'
+        }
+    }
+}
