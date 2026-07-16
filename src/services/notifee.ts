@@ -13,10 +13,11 @@ import notifee, {
 // ringing even though the config here looked correct. Bumping the ID
 // forces a genuinely fresh channel; deleteChannel() below also cleans up
 // the old one so it doesn't linger as a second, muted entry in Settings.
-export const JOB_OFFER_CHANNEL_ID = 'job-offers-v4';
-const LEGACY_CHANNEL_IDS = ['job-offers', 'job-offers-v2', 'job-offers-v3'];
+export const JOB_OFFER_CHANNEL_ID = 'job-offers-v5';
+const LEGACY_CHANNEL_IDS = ['job-offers', 'job-offers-v2', 'job-offers-v3', 'job-offers-v4'];
 
 export const JOB_OFFER_CATEGORY_ID = 'job-offer'; // must match `ios.categoryId` below
+export const JOB_OFFER_NOTIFICATION_ID = 'job-offer-notification';
 
 export async function createJobOfferChannel() {
   try {
@@ -87,6 +88,7 @@ export async function displayJobOfferNotification(data: JobOfferNotificationData
     : 30000;
 
   await notifee.displayNotification({
+    id: JOB_OFFER_NOTIFICATION_ID,
     title: 'New Job Alert',
     body: `${data.skillType || 'A job'} needed — ₹${data.ratePerDay || '—'}/day`,
     data: data as unknown as Record<string, string>,

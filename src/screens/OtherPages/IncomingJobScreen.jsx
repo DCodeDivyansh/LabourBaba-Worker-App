@@ -85,7 +85,13 @@ const IncomingJobScreen = () => {
   }, [onResolved]);
 
   useEffect(() => {
-    startRinging();
+    startRinging({
+      requirementId,
+      jobId,
+      skillType,
+      ratePerDay,
+      expiresAt,
+    });
     return () => {
       resolve();
     };
