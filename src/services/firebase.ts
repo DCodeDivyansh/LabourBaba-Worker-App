@@ -1,21 +1,35 @@
 import messaging from '@react-native-firebase/messaging';
-import { Platform } from 'react-native';
+import { checkNotifications, requestNotifications, openSettings } from 'react-native-permissions';
 
-export async function requestNotificationPermission(): Promise<boolean> {
-    if (Platform.OS === 'ios') {
-        const authStatus = await messaging().requestPermission();
-        return (
-            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-            authStatus === messaging.AuthorizationStatus.PROVISIONAL
-        );
-    }
-    // Android 13+ requires POST_NOTIFICATIONS at runtime; RNFirebase's
-    // requestPermission() covers this too.
-    const authStatus = await messaging().requestPermission();
-    return (
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL
-    );
+// 'granted' -> can send notifications. 'denied' -> not yet decided, or user
+// said no but the OS dialog can still be shown again. 'blocked' -> user
+// permanently denied (Android "Don't ask again" / iOS after first refusal) —
+// re-requesting silently does nothing; the only way forward is Settings.
+export type NotificationPermissionStatus = 'granted' | 'denied' | 'blocked' | 'unavailable';
+
+function normalize(status: string): NotificationPermissionStatus {
+    if (status === 'limited') return 'granted'; // iOS provisional/limited counts as usable
+    return status as NotificationPermissionStatus;
+}
+
+// Read-only — never triggers the native dialog. Safe to call on every focus.
+export async function checkNotificationPermissionStatus(): Promise<NotificationPermissionStatus> {
+    const { status } = await checkNotifications();
+    return normalize(status);
+}
+
+// Triggers the native OS permission dialog. Only call this from a screen
+// where the user just tapped an explicit "Enable Notifications" CTA — never
+// silently on app boot.
+export async function requestNotificationPermission(): Promise<NotificationPermissionStatus> {
+    const { status } = await requestNotifications(['alert', 'sound', 'badge']);
+    return normalize(status);
+}
+
+// Deep-links to the app's OS settings page — the only way to flip a
+// 'blocked' permission back on.
+export function openNotificationSettings(): Promise<void> {
+    return openSettings('notifications');
 }
 
 export async function getFCMToken(): Promise<string | null> {
@@ -55,10 +69,6 @@ export async function getInitialNotification() {
 
 
 export async function hasNotificationPermission(): Promise<boolean> {
-    const authStatus = await messaging().requestPermission();
-
-    return (
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL
-    );
+    const status = await checkNotificationPermissionStatus();
+    return status === 'granted';
 }

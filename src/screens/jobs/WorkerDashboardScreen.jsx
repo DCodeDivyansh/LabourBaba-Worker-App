@@ -13,6 +13,12 @@ import { getWorkerProfile } from '../../services/workerprofile';
 import { useEffect, useState } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useOnlineStatus } from '../../api/OnlineStatusContext';
+import {
+  checkNotificationPermissionStatus,
+  requestNotificationPermission,
+  getFCMToken,
+} from '../../services/firebase';
+import { updateDeviceToken } from '../../services/worker';
 
 export default function WorkerDashboardScreen() {
   const [worker, setWorker] = useState(null);
@@ -21,10 +27,33 @@ export default function WorkerDashboardScreen() {
 
   useEffect(() => {
     loadWorker();
+    ensureNotificationPermission(); // ⬅ NEW: prompt for notifications right on the dashboard
   }, []);
   // NOTE: job:incoming is now handled globally by IncomingJobListener
   // (mounted in App.tsx) so the popup opens no matter which screen the
   // worker is on. No local listener needed here anymore.
+
+  // ⬅ NEW: fires the native OS permission dialog directly (no in-app
+  // explainer screen) if notifications aren't already on. If the worker
+  // grants it, grabs the FCM token and registers it with the backend right
+  // away so job alerts start working immediately.
+  const ensureNotificationPermission = async () => {
+    try {
+      const status = await checkNotificationPermissionStatus();
+      if (status === 'granted') return;
+
+      const result = await requestNotificationPermission();
+      if (result === 'granted') {
+        const token = await getFCMToken();
+        const authToken = await AsyncStorage.getItem('token');
+        if (token && authToken) {
+          await updateDeviceToken(token);
+        }
+      }
+    } catch (err) {
+      console.log('[WorkerDashboardScreen] Notification permission check failed:', err);
+    }
+  };
 
   const loadWorker = async () => {
     try {
