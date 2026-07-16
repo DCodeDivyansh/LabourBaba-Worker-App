@@ -13,16 +13,18 @@ import notifee, {
 // ringing even though the config here looked correct. Bumping the ID
 // forces a genuinely fresh channel; deleteChannel() below also cleans up
 // the old one so it doesn't linger as a second, muted entry in Settings.
-export const JOB_OFFER_CHANNEL_ID = 'job-offers-v2';
-const LEGACY_CHANNEL_ID = 'job-offers';
+export const JOB_OFFER_CHANNEL_ID = 'job-offers-v4';
+const LEGACY_CHANNEL_IDS = ['job-offers', 'job-offers-v2', 'job-offers-v3'];
 
 export const JOB_OFFER_CATEGORY_ID = 'job-offer'; // must match `ios.categoryId` below
 
 export async function createJobOfferChannel() {
   try {
-    await notifee.deleteChannel(LEGACY_CHANNEL_ID);
+    for (const legacyId of LEGACY_CHANNEL_IDS) {
+      await notifee.deleteChannel(legacyId);
+    }
   } catch (e) {
-    // fine if it never existed
+    // fine if they never existed
   }
 
   try {
@@ -36,8 +38,9 @@ export async function createJobOfferChannel() {
       // vibrationPattern must be an even-length array (pairs of
       // wait/vibrate ms); the odd count made createChannel() throw on
       // every single build, so this channel never actually existed on the
-      // device — see the '[notifee] createChannel failed' log.
-      vibrationPattern: [0, 400, 200, 400, 200, 600],
+      // device — see the '[notifee] createChannel failed' log. Changed first
+      // element to 1 to ensure it is positive.
+      vibrationPattern: [1, 400, 200, 400, 200, 600],
       visibility: AndroidVisibility.PUBLIC,
       bypassDnd: true,
     });
@@ -104,6 +107,8 @@ export async function displayJobOfferNotification(data: JobOfferNotificationData
       ],
       autoCancel: false,
       timeoutAfter,
+      loopSound: true, // Make notification sound loop (insistent notification)
+      ongoing: true, // Prevent notification from being swiped away
     },
     ios: {
       categoryId: JOB_OFFER_CATEGORY_ID,

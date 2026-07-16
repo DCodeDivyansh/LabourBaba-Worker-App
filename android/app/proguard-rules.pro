@@ -8,3 +8,11 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Notifee ProGuard Rules
+-keep class com.notifee.** { *; }
+-keep class app.notifee.core.** { *; }
+
+# Keep react-native-sound classes
+-keep class com.zmxv.RNSound.** { *; }
+
