@@ -1,76 +1,69 @@
-import { Platform, Vibration } from "react-native";
+import { Vibration } from 'react-native';
+import TrackPlayer, { RepeatMode } from 'react-native-track-player';
 
-let Sound: any = null;
-try {
-  Sound = require("react-native-sound").default;
-  console.log("[ringtone] react-native-sound module loaded successfully");
-} catch (e) {
-  Sound = null;
-  console.log("[ringtone] Failed to require react-native-sound:", e);
-}
+// react-native-sound is not compatible with the New Architecture (mandatory
+// as of RN 0.82+) — its native module has no TurboModule/Codegen spec, so
+// it fails to build entirely. react-native-track-player is actively
+// maintained with real New Architecture support and handles looping
+// playback more reliably anyway. Use the v4.x line (Apache-2.0, free for
+// commercial use) — v5 (published as `@rntp/player`) is commercially
+// licensed.
 
-let ringtoneInstance: any = null;
-
+const RINGTONE_TRACK_ID = 'incoming-job-ringtone';
 const VIBRATION_PATTERN = [0, 400, 200, 400, 600];
 
-export const startRinging = () => {
-  console.log("[ringtone] startRinging() called"); // ⬅ NEW
+let setupPromise: Promise<void> | null = null;
+
+// TrackPlayer.setupPlayer() must only run once per app session — calling it
+// again throws. This caches the in-flight/completed setup so every caller
+// can safely await it without duplicating work.
+function ensurePlayerSetup(): Promise<void> {
+  if (!setupPromise) {
+    setupPromise = (async () => {
+      try {
+        await TrackPlayer.setupPlayer();
+      } catch (err) {
+        // "already initialized" is expected if setup ran elsewhere first —
+        // anything else is a real problem worth seeing in logs.
+        console.log('[ringtone] setupPlayer (may already be set up):', err);
+      }
+      await TrackPlayer.setRepeatMode(RepeatMode.Track);
+    })();
+  }
+  return setupPromise;
+}
+
+export const startRinging = async () => {
+  console.log('[ringtone] startRinging() called');
   Vibration.vibrate(VIBRATION_PATTERN, true);
 
-  if (!Sound) {
-    console.log(
-      "[ringtone] react-native-sound not installed — vibration only. " +
-        "Run `npm install react-native-sound` and add ringtone.mp3 to enable audio."
-    );
-    return;
-  }
-
   try {
-    Sound.setCategory("Playback");
-    console.log("[ringtone] Sound.setCategory('Playback') succeeded"); // ⬅ NEW
-
-    ringtoneInstance = new Sound(
-      "ringtone.mp3",
-      Platform.OS === "android" ? Sound.MAIN_BUNDLE : undefined,
-      (error: any) => {
-        if (error) {
-          console.log("[ringtone] Failed to load ringtone.mp3:", JSON.stringify(error)); // ⬅ CHANGED: stringify so nested error objects aren't silently blank
-          ringtoneInstance = null;
-          return;
-        }
-
-        console.log("[ringtone] ringtone.mp3 loaded successfully, duration:", ringtoneInstance?.getDuration?.()); // ⬅ NEW
-
-        if (ringtoneInstance) {
-          ringtoneInstance.setNumberOfLoops(-1);
-          ringtoneInstance.setVolume(1.0);
-          ringtoneInstance.play((success: boolean) => {
-            console.log("[ringtone] play() callback fired, success:", success); // ⬅ NEW
-            if (!success) {
-              console.log("[ringtone] Playback failed");
-            }
-          });
-          console.log("[ringtone] play() was called"); // ⬅ NEW — confirms we actually reached this line
-        }
-      }
-    );
+    await ensurePlayerSetup();
+    await TrackPlayer.reset();
+    await TrackPlayer.add({
+      id: RINGTONE_TRACK_ID,
+      // Bundled JS asset — NOT the android/app/src/main/res/raw copy, which
+      // native `require()` can't see. Metro's default assetExts already
+      // includes mp3, so this just works.
+      url: require('../assets/sounds/ringtone.mp3'),
+      title: 'Incoming Job',
+      artist: 'LabourBaba',
+    });
+    await TrackPlayer.play();
+    console.log('[ringtone] playback started');
   } catch (err) {
-    console.log("[ringtone] Unexpected error starting ringtone:", err); // existing, kept
+    console.log('[ringtone] Failed to start ringtone playback:', err);
   }
 };
 
-export const stopRinging = () => {
-  console.log("[ringtone] stopRinging() called"); // ⬅ NEW
+export const stopRinging = async () => {
+  console.log('[ringtone] stopRinging() called');
   Vibration.cancel();
 
-  if (ringtoneInstance) {
-    try {
-      ringtoneInstance.stop(() => {
-        ringtoneInstance.release();
-        ringtoneInstance = null;
-      });
-    } catch (err) {
-      ringtoneInstance = null;
-    }
+  try {
+    await TrackPlayer.stop();
+    await TrackPlayer.reset();
+  } catch (err) {
+    console.log('[ringtone] stopRinging error:', err);
   }
 };
