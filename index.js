@@ -5,7 +5,6 @@
 import { AppRegistry } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
-import TrackPlayer from 'react-native-track-player';
 import App from './App';
 import { name as appName } from './app.json';
 import { displayJobOfferNotification, createJobOfferChannel } from './src/services/notifee'; // ⬅ CHANGED
@@ -93,8 +92,3 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
 });
 
 AppRegistry.registerComponent(appName, () => App);
-
-// Required by react-native-track-player on Android — backs the foreground
-// service that keeps the ringtone playing while the incoming-job screen is
-// up. Must be a top-level call, not inside App.tsx.
-TrackPlayer.registerPlaybackService(() => require('./src/services/trackPlayerService'));
