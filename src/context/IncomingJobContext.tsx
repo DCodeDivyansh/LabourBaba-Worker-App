@@ -14,6 +14,9 @@ import {
 
 import { socket } from '../services/socket';
 import { respondToJobOffer } from '../services/api';
+import { getIncomingDispatchByRequirement } from '../services/dispatch';
+import { getCurrentLocation } from '../services/location';
+import { distanceTextBetween } from '../utils/distance';
 
 // ⚠️ Adjust to your actual navigation ref utility (commonly a RootNavigation
 // helper wrapping a NavigationContainer ref). Must be callable outside of
@@ -52,6 +55,65 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
     }
   }, []);
 
+  /**
+   * Fetches the full job_dispatch → job_requirement → job → customer chain
+   * for this requirement and merges the real customer name, phone, job
+   * location, and a client-computed distance into currentJob. Runs after
+   * the lightweight native payload has already started the ring/countdown/
+   * navigation, so this only ever *upgrades* what's on screen — it never
+   * blocks the initial "phone is ringing" moment.
+   *
+   * Field paths below are confirmed against dispatchServices.ts's
+   * getIncomingDispatches(): job_dispatch rows include job_requirement,
+   * which includes job, which includes customer.
+   */
+  const enrichCurrentJob = useCallback(async (jobId: string, requirementId: string) => {
+    try {
+      const dispatch = await getIncomingDispatchByRequirement(requirementId);
+      if (!dispatch) return;
+
+      const jr = dispatch.job_requirement;
+      const job = jr?.job;
+      const customer = job?.customer;
+
+      const jobLatitude: number | null = job?.latitude ?? null;
+      const jobLongitude: number | null = job?.longitude ?? null;
+
+      let distanceText = '--';
+      try {
+        const workerLoc = await getCurrentLocation();
+        distanceText = distanceTextBetween(
+          (workerLoc as any)?.latitude,
+          (workerLoc as any)?.longitude,
+          jobLatitude,
+          jobLongitude,
+        );
+      } catch {
+        // Location unavailable (denied/timeout) — leave distanceText as '--'
+        // rather than blocking the rest of the enrichment.
+      }
+
+      setCurrentJob(prev => {
+        // Guard against a stale response landing after the worker already
+        // accepted/rejected/timed out, or after a different job arrived.
+        if (!prev || prev.jobId !== jobId) return prev;
+        return {
+          ...prev,
+          customerName: customer?.name ?? prev.customerName,
+          customerPhone: customer?.phone ?? prev.customerPhone,
+          location: job?.location ?? prev.location,
+          ratePerDay: jr?.rate_per_day != null ? String(jr.rate_per_day) : prev.ratePerDay,
+          body: jr?.skill_type ?? prev.body,
+          jobLatitude,
+          jobLongitude,
+          distanceText,
+        };
+      });
+    } catch (e) {
+      console.log('[IncomingJobContext] Failed to enrich job details:', e);
+    }
+  }, []);
+
   const startCountdownFor = useCallback((job: IncomingJobPayload) => {
     resolvedRef.current = false;
     setCurrentJob(job);
@@ -74,7 +136,12 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
     }, 1000);
 
     navigate('IncomingJobScreen', { jobId: job.jobId });
-  }, [clearCountdown]);
+
+    enrichCurrentJob(job.jobId, job.requirementId);
+    // enrichCurrentJob intentionally omitted from deps: it's stable
+    // (useCallback with empty deps below), including it here would only
+    // require reordering without changing behavior.
+  }, [clearCountdown, enrichCurrentJob]);
 
   const clearJob = useCallback(() => {
     clearCountdown();

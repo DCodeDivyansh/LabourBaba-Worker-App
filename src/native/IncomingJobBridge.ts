@@ -9,6 +9,14 @@ export interface IncomingJobPayload {
   customerName: string;
   location: string;
   expiresAt: string;
+  // Enrichment fields — NOT sent by the native layer. IncomingJobContext
+  // fills these in asynchronously via getIncomingDispatchByRequirement()
+  // right after a job lands, so the screen initially renders with the
+  // lightweight native fields and then re-renders once real data arrives.
+  customerPhone?: string;
+  jobLatitude?: number | null;
+  jobLongitude?: number | null;
+  distanceText?: string;
 }
 
 export interface IncomingJobDecisionEvent {

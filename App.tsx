@@ -9,11 +9,10 @@ import { updateDeviceToken } from './src/services/worker'; // ⬅ NEW
 import { IncomingJobProvider } from './src/context/IncomingJobContext';
 
 
-Geocoder.init("YOUR_GOOGLE_MAPS_API_KEY");
+Geocoder.init("AIzaSyCXWcIi33_8BfoQp9Cuo6riNUxGDV9Ui2E");
 
 import AppNavigator from './src/navigation/AppNavigator';
 import { OnlineStatusProvider } from './src/api/OnlineStatusContext';
-import IncomingJobListener from './src/components/IncomingJobListener';
 import SplashScreen from './src/screens/auth/SplashScreen';
 import { navigationRef } from './src/navigation/RootNavigation';
 import { NavigationContainer } from '@react-navigation/native';
@@ -87,7 +86,6 @@ export default function App() {
         <OnlineStatusProvider>
           <SafeAreaProvider>
             <AppNavigator initialRoute={initialRoute} />
-            <IncomingJobListener />
           </SafeAreaProvider>
         </OnlineStatusProvider>
       </IncomingJobProvider>

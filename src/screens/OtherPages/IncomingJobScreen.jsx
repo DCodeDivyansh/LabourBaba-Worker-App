@@ -65,9 +65,10 @@ export default function IncomingJobScreen() {
   // "undefined" or force a fallback.
   const {
     customerName,
+    customerPhone,
     location,
     ratePerDay,
-    distanceText,   // e.g. "2.5 km" — pre-formatted by the backend
+    distanceText,   // e.g. "2.5 km" — now computed client-side in IncomingJobContext
     rating,         // optional — not sent yet, shown only if present
     jobsCompleted,  // optional — not sent yet, shown only if present
   } = currentJob;
@@ -98,6 +99,7 @@ export default function IncomingJobScreen() {
               </Text>
             )}
             {!!location && <Text style={styles.locationText}>{location}</Text>}
+            {!!customerPhone && <Text style={styles.locationText}>{customerPhone}</Text>}
           </View>
         </View>
 
