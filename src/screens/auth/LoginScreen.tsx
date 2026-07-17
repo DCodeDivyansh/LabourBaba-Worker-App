@@ -13,6 +13,8 @@ import FooterLink from '../../components/FooterLink';
 import LanguageToggle from '../../components/LanguageToggle';
 import { Alert } from 'react-native';
 import { workerLogin } from '../../services/login';
+import { updateDeviceToken } from '../../services/worker';
+import { getFCMToken } from '../../services/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { socket } from "../../services/socket";
 
@@ -29,6 +31,24 @@ const LoginScreen = ({ navigation }: any) => {
       if (response.success) {
         await AsyncStorage.setItem('token', response.token);
         await AsyncStorage.setItem('worker', JSON.stringify(response.data));
+
+        // ⬅ NEW: closes the race where a token refresh (or the initial
+        // getFCMToken() call in App.tsx's mount effect) fires before login
+        // completes — App.tsx's onTokenRefresh listener checks for an auth
+        // token at the moment it fires and silently skips the sync if the
+        // worker isn't logged in yet. That token is then never retried
+        // until Firebase happens to rotate it again naturally. Explicitly
+        // re-syncing here, right after we know both the auth token and the
+        // FCM token exist, closes that gap for every login, not just first
+        // installs.
+        try {
+          const fcmToken = await getFCMToken();
+          if (fcmToken) {
+            await updateDeviceToken(fcmToken);
+          }
+        } catch (e) {
+          console.log('[Login] Failed to sync device token after login:', e);
+        }
 
         // socket.connect();
         // socket.on("connect", () => {

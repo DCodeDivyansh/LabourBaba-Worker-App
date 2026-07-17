@@ -83,19 +83,19 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
   }, [clearCountdown]);
 
   const notifyBackend = useCallback(
-    async (jobId: string, decision: 'accept' | 'reject') => {
+    async (requirementId: string, decision: 'accept' | 'reject') => {
       if (socket.connected) {
         // Socket path — ack callback lets us fall back to REST if the
         // server doesn't confirm within a short window.
         const ackTimeout = setTimeout(() => {
-          respondToJobOffer(jobId, decision).catch(() => {});
+          respondToJobOffer(requirementId, decision).catch(() => { });
         }, 4000);
 
-        socket.emit('job_offer_response', { jobId, decision }, () => {
+        socket.emit('job_offer_response', { requirementId, decision }, () => {
           clearTimeout(ackTimeout);
         });
       } else {
-        await respondToJobOffer(jobId, decision);
+        await respondToJobOffer(requirementId, decision);
       }
     },
     []
@@ -110,7 +110,7 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
     await IncomingJobBridge.acceptJob(job.jobId);
     clearJob();
 
-    await notifyBackend(job.jobId, 'accept');
+    await notifyBackend(job.requirementId, 'accept');
     navigate('JobDetails', { jobId: job.jobId, requirementId: job.requirementId });
   }, [currentJob, clearJob, notifyBackend]);
 
@@ -123,36 +123,40 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
     await IncomingJobBridge.rejectJob(job.jobId);
     clearJob();
 
-    await notifyBackend(job.jobId, 'reject');
+    await notifyBackend(job.requirementId, 'reject');
   }, [currentJob, clearJob, notifyBackend]);
 
   // Timeout is driven natively (IncomingJobForegroundService's 30s Handler)
   // so it fires reliably even if JS is suspended — this listener just syncs
-  // UI state and still notifies the backend.
+  // UI state and still notifies the backend. The native event only carries
+  // jobId, so requirementId is looked up from currentJob before it's cleared.
   useEffect(() => {
     const sub = IncomingJobBridge.onTimeout(async ({ jobId }) => {
       if (resolvedRef.current || !currentJob || currentJob.jobId !== jobId) return;
       resolvedRef.current = true;
+      const requirementId = currentJob.requirementId;
       clearJob();
-      await notifyBackend(jobId, 'reject');
+      await notifyBackend(requirementId, 'reject');
     });
     return () => sub.remove();
   }, [currentJob, clearJob, notifyBackend]);
 
   // Notification's own inline Accept/Reject buttons (tapped without opening
   // IncomingJobScreen) also need to update JS state and hit the backend.
+  // Same requirementId lookup as onTimeout above, for the same reason.
   useEffect(() => {
     const sub = IncomingJobBridge.onDecision(async ({ jobId, decision }) => {
-      if (resolvedRef.current) return;
+      if (resolvedRef.current || !currentJob || currentJob.jobId !== jobId) return;
       resolvedRef.current = true;
+      const requirementId = currentJob.requirementId;
       clearJob();
-      await notifyBackend(jobId, decision);
+      await notifyBackend(requirementId, decision);
       if (decision === 'accept') {
-        navigate('JobDetails', { jobId });
+        navigate('JobDetails', { jobId, requirementId });
       }
     });
     return () => sub.remove();
-  }, [clearJob, notifyBackend]);
+  }, [currentJob, clearJob, notifyBackend]);
 
   // Live event: app is foreground/background (not killed) when the job lands.
   useEffect(() => {

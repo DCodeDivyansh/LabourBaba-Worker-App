@@ -6,12 +6,19 @@ export const api = axios.create({
   baseURL: "https://api.labourbaba.in",
 });
 
-// ⚠️ Path is a guess — replace with your actual backend route if different.
+// Real routes, confirmed against src/routes/dispatchRoutes.ts:
+//   POST /api/dispatch/:requirementId/accept
+//   POST /api/dispatch/:requirementId/decline
+// Note: keyed by requirementId, NOT jobId — the two are different IDs in
+// this system (see JobDispatchSchema / job_requirement table). No request
+// body needed; the worker is identified via the JWT the interceptor below
+// already attaches.
 export async function respondToJobOffer(
-  jobId: string,
+  requirementId: string,
   decision: "accept" | "reject"
 ): Promise<void> {
-  await api.post(`/worker/jobs/${jobId}/respond`, { decision });
+  const verb = decision === "accept" ? "accept" : "decline";
+  await api.post(`/api/dispatch/${requirementId}/${verb}`);
 }
 
 api.interceptors.request.use(
@@ -25,4 +32,4 @@ api.interceptors.request.use(
     return config; // <- MUST return config
   },
   (error) => Promise.reject(error)
-); 
+);

@@ -16,3 +16,7 @@
 # Keep react-native-sound classes
 -keep class com.zmxv.RNSound.** { *; }
 
+
+# android/app/src/main/res/raw/keep.xml — safer than a proguard rule for *resources*
+
+-keep class com.labourbaba.incomingjob.** { *; }
