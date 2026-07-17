@@ -6,6 +6,7 @@ export const getCurrentLocation = async () => {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
     );
+
     console.log('Permission Result:', granted);
 
     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
@@ -13,10 +14,9 @@ export const getCurrentLocation = async () => {
     }
   }
 
-  // ⬅ NEW: iOS never had a permission request at all — getCurrentPosition
-  // would just silently fail/time out there without this.
   if (Platform.OS === 'ios') {
     const authStatus = await Geolocation.requestAuthorization('whenInUse');
+
     console.log('iOS Authorization Result:', authStatus);
 
     if (authStatus !== 'granted') {
@@ -24,19 +24,31 @@ export const getCurrentLocation = async () => {
     }
   }
 
-  return new Promise<{ latitude: number; longitude: number }>((resolve, reject) => {
+  console.log('Requesting current location...');
+
+  return new Promise((resolve, reject) => {
     Geolocation.getCurrentPosition(
       (position) => {
+        console.log('LOCATION SUCCESS');
+        console.log(position);
+
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
       },
-      (error) => reject(error),
+      (error) => {
+        console.log('LOCATION ERROR');
+        console.log(error);
+
+        reject(error);
+      },
       {
         enableHighAccuracy: true,
         timeout: 15000,
-        maximumAge: 5000,
+        maximumAge: 0,
+        forceRequestLocation: true,
+        showLocationDialog: true,
       },
     );
   });

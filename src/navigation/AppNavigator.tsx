@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+// import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -8,8 +8,8 @@ import CreateProfileScreen from '../screens/auth/CreateProfileScreen';
 import Help from '../screens/profile/Help'
 import LanguageSelectionScreen from '../screens/profile/LanguageSelectionScreen'
 import JobDetailsScreen from '../screens/OtherPages/JobDetailsScreen';
-import IncomingJobScreen from '../screens/OtherPages/IncomingJobScreen';
 import JobCompletedScreen from '../screens/OtherPages/JobCompletedScreen';
+import IncomingJobScreen from '../screens/OtherPages/IncomingJobScreen';
 
 import MainTabs from './MainTabs';
 import { navigationRef } from './navigationRef';
@@ -25,7 +25,6 @@ export default function AppNavigator({
   initialRoute,
 }: Props) {
   return (
-    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName={initialRoute}
         screenOptions={{
@@ -68,13 +67,9 @@ export default function AppNavigator({
         />
 
         <Stack.Screen
-          name="IncomingJob"
+          name="IncomingJobScreen"
           component={IncomingJobScreen}
-          options={{
-            presentation: 'fullScreenModal',
-            gestureEnabled: false,
-            animation: 'slide_from_bottom',
-          }}
+          options={{ headerShown: false, gestureEnabled: false }}
         />
 
         <Stack.Screen
@@ -86,6 +81,5 @@ export default function AppNavigator({
           }}
         />
       </Stack.Navigator>
-    </NavigationContainer>
   );
 }

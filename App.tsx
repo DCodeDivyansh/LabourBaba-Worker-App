@@ -6,6 +6,8 @@ import Geocoder from 'react-native-geocoding';
 import './src/translations/i18n';
 import { requestNotificationPermission, getFCMToken, onTokenRefresh } from './src/services/firebase'; // ⬅ CHANGED
 import { updateDeviceToken } from './src/services/worker'; // ⬅ NEW
+import { IncomingJobProvider } from './src/context/IncomingJobContext';
+
 
 Geocoder.init("YOUR_GOOGLE_MAPS_API_KEY");
 
@@ -13,6 +15,8 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { OnlineStatusProvider } from './src/api/OnlineStatusContext';
 import IncomingJobListener from './src/components/IncomingJobListener';
 import SplashScreen from './src/screens/auth/SplashScreen';
+import { navigationRef } from './src/navigation/RootNavigation';
+import { NavigationContainer } from '@react-navigation/native';
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
@@ -78,11 +82,15 @@ export default function App() {
   }
 
   return (
-    <OnlineStatusProvider>
-      <SafeAreaProvider>
-        <AppNavigator initialRoute={initialRoute} />
-        <IncomingJobListener />
-      </SafeAreaProvider>
-    </OnlineStatusProvider>
+    <NavigationContainer ref={navigationRef}>
+      <IncomingJobProvider>
+        <OnlineStatusProvider>
+          <SafeAreaProvider>
+            <AppNavigator initialRoute={initialRoute} />
+            <IncomingJobListener />
+          </SafeAreaProvider>
+        </OnlineStatusProvider>
+      </IncomingJobProvider>
+    </NavigationContainer>
   );
 }
