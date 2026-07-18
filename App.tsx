@@ -14,7 +14,7 @@ Geocoder.init("AIzaSyCXWcIi33_8BfoQp9Cuo6riNUxGDV9Ui2E");
 import AppNavigator from './src/navigation/AppNavigator';
 import { OnlineStatusProvider } from './src/api/OnlineStatusContext';
 import SplashScreen from './src/screens/auth/SplashScreen';
-import { navigationRef } from './src/navigation/RootNavigation';
+import { navigationRef, flushPendingNavigation } from './src/navigation/RootNavigation';
 import { NavigationContainer } from '@react-navigation/native';
 
 export default function App() {
@@ -81,7 +81,7 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} onReady={flushPendingNavigation}>
       <IncomingJobProvider>
         <OnlineStatusProvider>
           <SafeAreaProvider>

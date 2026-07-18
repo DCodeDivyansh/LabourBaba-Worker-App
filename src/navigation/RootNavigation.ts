@@ -3,8 +3,34 @@ import { createNavigationContainerRef, StackActions } from '@react-navigation/na
 
 export const navigationRef = createNavigationContainerRef();
 
+// Queue for navigation calls that arrive before the NavigationContainer has
+// finished mounting — this is exactly the race that happens on a cold start
+// from a killed app: IncomingJobProvider's mount effect calls
+// getInitialIncomingJob() and then navigate('IncomingJobScreen', ...)
+// almost immediately, often before navigationRef.isReady() is true.
+// Previously that call was just silently dropped, so the job data landed in
+// currentJob state correctly but the screen itself never appeared.
+type PendingNav = { name: string; params?: object };
+let pendingNavigation: PendingNav | null = null;
+
 export function navigate(name: string, params?: object) {
   if (navigationRef.isReady()) {
+    (navigationRef as any).navigate(name, params);
+  } else {
+    // Don't drop it — the container may not be mounted yet on a cold start.
+    // Only the most recent pending call is kept, which is correct for this
+    // use case (an incoming-job navigation always supersedes anything
+    // queued before it).
+    pendingNavigation = { name, params };
+  }
+}
+
+/** Call this from NavigationContainer's onReady prop, once, to flush any
+ * navigation call that arrived before the container was ready. */
+export function flushPendingNavigation() {
+  if (pendingNavigation && navigationRef.isReady()) {
+    const { name, params } = pendingNavigation;
+    pendingNavigation = null;
     (navigationRef as any).navigate(name, params);
   }
 }
