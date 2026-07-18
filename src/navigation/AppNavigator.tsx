@@ -12,7 +12,6 @@ import JobCompletedScreen from '../screens/OtherPages/JobCompletedScreen';
 import IncomingJobScreen from '../screens/OtherPages/IncomingJobScreen';
 
 import MainTabs from './MainTabs';
-import { navigationRef } from './navigationRef';
 
 type Props = {
   initialRoute: string;
@@ -69,7 +68,14 @@ export default function AppNavigator({
         <Stack.Screen
           name="IncomingJobScreen"
           component={IncomingJobScreen}
-          options={{ headerShown: false, gestureEnabled: false }}
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+            presentation: 'transparentModal',
+            animation: 'fade',
+            animationDuration: 160,
+            contentStyle: { backgroundColor: 'transparent' },
+          }}
         />
 
         <Stack.Screen

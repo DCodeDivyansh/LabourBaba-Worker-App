@@ -29,7 +29,7 @@ export default function WorkerDashboardScreen() {
     loadWorker();
     ensureNotificationPermission(); // ⬅ NEW: prompt for notifications right on the dashboard
   }, []);
-  // NOTE: job:incoming is now handled globally by IncomingJobListener
+  // NOTE: job:incoming is now handled globally by IncomingJobContext
   // (mounted in App.tsx) so the popup opens no matter which screen the
   // worker is on. No local listener needed here anymore.
 

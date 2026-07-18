@@ -14,20 +14,21 @@ import {
 
 import { socket } from '../services/socket';
 import { respondToJobOffer } from '../services/api';
-import { getIncomingDispatchByRequirement } from '../services/dispatch';
-import { getCurrentLocation } from '../services/location';
+import { getDispatchDetail, getIncomingDispatchByRequirement } from '../services/dispatch';
+import { getCurrentLocation, APPROXIMATE_LOCATION_OPTIONS } from '../services/location';
 import { distanceTextBetween } from '../utils/distance';
 
 // ⚠️ Adjust to your actual navigation ref utility (commonly a RootNavigation
 // helper wrapping a NavigationContainer ref). Must be callable outside of
 // any component tree, since native events can fire before a screen mounts.
-import { navigate } from '../navigation/RootNavigation';
+import { navigate, dismissIncomingJob, replaceWithJobDetails } from '../navigation/RootNavigation';
 
 const COUNTDOWN_SECONDS = 30;
 
 interface IncomingJobContextValue {
   currentJob: IncomingJobPayload | null;
   secondsRemaining: number;
+  totalSeconds: number;
   accept: () => Promise<void>;
   reject: () => Promise<void>;
 }
@@ -45,6 +46,7 @@ export function useIncomingJob(): IncomingJobContextValue {
 export function IncomingJobProvider({ children }: { children: React.ReactNode }) {
   const [currentJob, setCurrentJob] = useState<IncomingJobPayload | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(COUNTDOWN_SECONDS);
+  const [totalSeconds, setTotalSeconds] = useState(COUNTDOWN_SECONDS);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const resolvedRef = useRef(false); // guards against double accept/reject/timeout
 
@@ -56,6 +58,30 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
   }, []);
 
   /**
+   * GET /api/dispatch/:requirementId returns just the one dispatch row this
+   * screen actually needs. Prefer it — it's a single-record lookup instead
+   * of the list endpoint's full "every pending dispatch for this worker,
+   * each with its own job_requirement → job → customer chain" query, which
+   * is what was making customer details slow to appear. Falls back to the
+   * old list-based lookup if the detail endpoint doesn't return the shape
+   * we expect, so this degrades safely rather than breaking enrichment.
+   */
+  const fetchDispatchDetail = useCallback(async (requirementId: string) => {
+    if (requirementId) {
+      try {
+        const detail = await getDispatchDetail(requirementId);
+        const record = (detail as any)?.data ?? detail;
+        if (record?.job_requirement) {
+          return record;
+        }
+      } catch {
+        // Detail endpoint unavailable/failed — fall through to the list lookup.
+      }
+    }
+    return getIncomingDispatchByRequirement(requirementId);
+  }, []);
+
+  /**
    * Fetches the full job_dispatch → job_requirement → job → customer chain
    * for this requirement and merges the real customer name, phone, job
    * location, and a client-computed distance into currentJob. Runs after
@@ -63,13 +89,25 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
    * navigation, so this only ever *upgrades* what's on screen — it never
    * blocks the initial "phone is ringing" moment.
    *
+   * The dispatch-detail fetch and the location fetch are independent, so
+   * they run concurrently (Promise.allSettled) instead of one after the
+   * other — previously a slow GPS fix delayed customer details that had
+   * nothing to do with location, and vice versa. Location itself now uses
+   * APPROXIMATE_LOCATION_OPTIONS, which accepts a recent cached fix instead
+   * of always forcing a brand-new high-accuracy one.
+   *
    * Field paths below are confirmed against dispatchServices.ts's
    * getIncomingDispatches(): job_dispatch rows include job_requirement,
    * which includes job, which includes customer.
    */
   const enrichCurrentJob = useCallback(async (jobId: string, requirementId: string) => {
     try {
-      const dispatch = await getIncomingDispatchByRequirement(requirementId);
+      const [dispatchResult, locationResult] = await Promise.allSettled([
+        fetchDispatchDetail(requirementId),
+        getCurrentLocation(APPROXIMATE_LOCATION_OPTIONS),
+      ]);
+
+      const dispatch = dispatchResult.status === 'fulfilled' ? dispatchResult.value : null;
       if (!dispatch) return;
 
       const jr = dispatch.job_requirement;
@@ -80,18 +118,17 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
       const jobLongitude: number | null = job?.longitude ?? null;
 
       let distanceText = '--';
-      try {
-        const workerLoc = await getCurrentLocation();
+      if (locationResult.status === 'fulfilled') {
+        const workerLoc = locationResult.value as any;
         distanceText = distanceTextBetween(
-          (workerLoc as any)?.latitude,
-          (workerLoc as any)?.longitude,
+          workerLoc?.latitude,
+          workerLoc?.longitude,
           jobLatitude,
           jobLongitude,
         );
-      } catch {
-        // Location unavailable (denied/timeout) — leave distanceText as '--'
-        // rather than blocking the rest of the enrichment.
       }
+      // Location denied/timed out — leave distanceText as '--' rather than
+      // blocking the rest of the enrichment on it.
 
       setCurrentJob(prev => {
         // Guard against a stale response landing after the worker already
@@ -112,7 +149,7 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
     } catch (e) {
       console.log('[IncomingJobContext] Failed to enrich job details:', e);
     }
-  }, []);
+  }, [fetchDispatchDetail]);
 
   const startCountdownFor = useCallback((job: IncomingJobPayload) => {
     resolvedRef.current = false;
@@ -123,6 +160,7 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
       ? Math.max(0, Math.round((expiresAtMs - Date.now()) / 1000))
       : COUNTDOWN_SECONDS;
     setSecondsRemaining(initialRemaining);
+    setTotalSeconds(initialRemaining > 0 ? initialRemaining : COUNTDOWN_SECONDS);
 
     clearCountdown();
     intervalRef.current = setInterval(() => {
@@ -138,9 +176,6 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
     navigate('IncomingJobScreen', { jobId: job.jobId });
 
     enrichCurrentJob(job.jobId, job.requirementId);
-    // enrichCurrentJob intentionally omitted from deps: it's stable
-    // (useCallback with empty deps below), including it here would only
-    // require reordering without changing behavior.
   }, [clearCountdown, enrichCurrentJob]);
 
   const clearJob = useCallback(() => {
@@ -178,7 +213,7 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
     clearJob();
 
     await notifyBackend(job.requirementId, 'accept');
-    navigate('JobDetails', { jobId: job.jobId, requirementId: job.requirementId });
+    replaceWithJobDetails({ jobId: job.jobId, requirementId: job.requirementId });
   }, [currentJob, clearJob, notifyBackend]);
 
   const reject = useCallback(async () => {
@@ -189,6 +224,7 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
     IncomingJobBridge.stopRinging();
     await IncomingJobBridge.rejectJob(job.jobId);
     clearJob();
+    dismissIncomingJob();
 
     await notifyBackend(job.requirementId, 'reject');
   }, [currentJob, clearJob, notifyBackend]);
@@ -203,6 +239,7 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
       resolvedRef.current = true;
       const requirementId = currentJob.requirementId;
       clearJob();
+      dismissIncomingJob();
       await notifyBackend(requirementId, 'reject');
     });
     return () => sub.remove();
@@ -219,7 +256,9 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
       clearJob();
       await notifyBackend(requirementId, decision);
       if (decision === 'accept') {
-        navigate('JobDetails', { jobId, requirementId });
+        replaceWithJobDetails({ jobId, requirementId });
+      } else {
+        dismissIncomingJob();
       }
     });
     return () => sub.remove();
@@ -259,7 +298,9 @@ export function IncomingJobProvider({ children }: { children: React.ReactNode })
   }, []);
 
   return (
-    <IncomingJobContext.Provider value={{ currentJob, secondsRemaining, accept, reject }}>
+    <IncomingJobContext.Provider
+      value={{ currentJob, secondsRemaining, totalSeconds, accept, reject }}
+    >
       {children}
     </IncomingJobContext.Provider>
   );

@@ -10,4 +10,18 @@
         <item name="android:forceDarkAllowed">false</item>
         <item name="postBootSplashTheme">@style/AppTheme</item>
     </style>
+
+    <!-- Used only by IncomingJobActivity, a trampoline that wakes/unlocks the
+         screen and immediately forwards to MainActivity. It never actually
+         draws UI, so it must be fully transparent — otherwise the default
+         AppCompat theme paints an opaque frame (and runs a fade transition)
+         that reads as a flash between the notification and the real app. -->
+    <style name="Theme.Transparent" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
 </resources>

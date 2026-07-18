@@ -2,6 +2,7 @@ import notifee, {
   AndroidImportance,
   AndroidVisibility,
   AndroidCategory,
+  AndroidStyle,
 } from '@notifee/react-native';
 
 // ⬅ CHANGED: bumped from 'job-offers' — Android notification channels are
@@ -75,6 +76,8 @@ export interface JobOfferNotificationData {
   jobId: string;
   skillType?: string;
   ratePerDay?: string;
+  customerName?: string;
+  location?: string;
   expiresAt?: string; // ⬅ NEW: ISO timestamp, used to auto-dismiss the notification
 }
 
@@ -87,15 +90,40 @@ export async function displayJobOfferNotification(data: JobOfferNotificationData
     ? Math.max(1000, expiryMs - Date.now())
     : 30000;
 
+  const headline = data.skillType || 'New Job Offer';
+
+  // Collapsed (tray) line — short summary.
+  const collapsedBody = [
+    headline,
+    data.customerName,
+    data.ratePerDay ? `₹${data.ratePerDay}/day` : null,
+    data.location,
+  ]
+    .filter(Boolean)
+    .join(' • ');
+
+  // Expanded (pulled-down) body — one detail per line, same fields the
+  // native Android notification shows, so the two paths stay consistent.
+  const expandedLines = [
+    data.customerName ? `👤  ${data.customerName}` : null,
+    data.location ? `📍  ${data.location}` : null,
+    data.ratePerDay ? `💰  ₹${data.ratePerDay} per day` : null,
+    '⏱  Respond within 30 seconds',
+  ].filter(Boolean);
+
   await notifee.displayNotification({
     id: JOB_OFFER_NOTIFICATION_ID,
-    title: 'New Job Alert',
-    body: `${data.skillType || 'A job'} needed — ₹${data.ratePerDay || '—'}/day`,
+    title: headline,
+    body: collapsedBody,
     data: data as unknown as Record<string, string>,
     android: {
       channelId: JOB_OFFER_CHANNEL_ID,
       importance: AndroidImportance.HIGH,
       category: AndroidCategory.CALL, // ⬅ NEW: hints the OS to treat this like an incoming call
+      style: {
+        type: AndroidStyle.BIGTEXT,
+        text: expandedLines.join('\n'),
+      },
       // ⬅ NEW: pops the app straight over the lock screen / whatever's on
       // screen — the actual "rings like Uber" behavior, rather than a
       // silent banner the worker has to notice and tap. Requires the

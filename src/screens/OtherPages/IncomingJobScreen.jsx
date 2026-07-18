@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import {
   Animated,
+  BackHandler,
+  Easing,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -8,17 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useIncomingJob } from '../../context/IncomingJobContext';
-
-const COLORS = {
-  primary: '#FF5404',
-  primaryLight: '#FFF1EA',
-  background: '#F8F9FB',
-  card: '#FFFFFF',
-  text: '#1A1A1A',
-  subtext: '#6B7280',
-  border: '#F0E4DC',
-  danger: '#DC2626',
-};
+import { colors, radius, spacing, typography, shadow } from '../../theme/theme';
 
 function getInitials(name = '') {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -28,116 +20,210 @@ function getInitials(name = '') {
 }
 
 export default function IncomingJobScreen() {
-  const { currentJob, secondsRemaining, accept, reject } = useIncomingJob();
+  const { currentJob, secondsRemaining, totalSeconds, accept, reject } = useIncomingJob();
+
+  // Two-stage entrance, matched to real dispatch/call UIs: the dim backdrop
+  // fades in immediately (so there is never a blank/white frame, even for a
+  // single frame), then the offer card springs up from the bottom once it
+  // mounts. These are separate Animated values so the backdrop is never
+  // gated behind currentJob existing.
+  const backdropAnim = useRef(new Animated.Value(0)).current;
   const cardAnim = useRef(new Animated.Value(0)).current;
+  const ringAnim = useRef(new Animated.Value(0)).current;
+  const progressAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (currentJob) {
-      cardAnim.setValue(0);
-      Animated.spring(cardAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        friction: 7,
-        tension: 60,
-      }).start();
-    }
-  }, [currentJob, cardAnim]);
+    Animated.timing(backdropAnim, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  }, [backdropAnim]);
 
-  if (!currentJob) {
-    return null;
-  }
+  useEffect(() => {
+    if (!currentJob) return;
+
+    cardAnim.setValue(0);
+    Animated.spring(cardAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 8,
+      tension: 65,
+    }).start();
+
+    // Radar-style pulse behind the avatar while the offer is "ringing" —
+    // the same visual cue used by call/dispatch apps to signal "waiting for
+    // your response" without saying so in text.
+    ringAnim.setValue(0);
+    const pulse = Animated.loop(
+      Animated.timing(ringAnim, {
+        toValue: 1,
+        duration: 1400,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [currentJob, cardAnim, ringAnim]);
+
+  // Block the hardware back button while an offer is active — declining
+  // must be an explicit, deliberate action (Decline button), not an
+  // accidental back-press dismissal, same as any real call/order screen.
+  useEffect(() => {
+    if (!currentJob) return undefined;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => sub.remove();
+  }, [currentJob]);
+
+  useEffect(() => {
+    const ratio = totalSeconds > 0 ? secondsRemaining / totalSeconds : 0;
+    Animated.timing(progressAnim, {
+      toValue: Math.max(0, Math.min(1, ratio)),
+      duration: 350,
+      easing: Easing.linear,
+      useNativeDriver: false, // width % can't use the native driver
+    }).start();
+  }, [secondsRemaining, totalSeconds, progressAnim]);
 
   const translateY = cardAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [400, 0],
+    outputRange: [420, 0],
   });
 
-  // These field names now match exactly what notifyWorkers() in
-  // simpleDispatch.ts actually sends (both the FCM `data` payload and the
-  // Socket.IO `job:incoming` emit use the same keys):
-  //   customerName, location, ratePerDay, distanceMeters, distanceText,
-  //   jobId, requirementId, expiresAt
-  // NOTE: the backend does not currently send `rating`, `jobsCompleted`,
-  // or `etaMinutes` — those were fields I'd guessed at earlier and don't
-  // exist on the real payload, which is why they rendered as blank/'--'.
-  // I've left them in as optional (only shown if present) in case you add
-  // them later, but removed them from anywhere they'd otherwise show as
-  // "undefined" or force a fallback.
-  const {
-    customerName,
-    customerPhone,
-    location,
-    ratePerDay,
-    distanceText,   // e.g. "2.5 km" — now computed client-side in IncomingJobContext
-    rating,         // optional — not sent yet, shown only if present
-    jobsCompleted,  // optional — not sent yet, shown only if present
-  } = currentJob;
+  const ringScale = ringAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.9] });
+  const ringOpacity = ringAnim.interpolate({ inputRange: [0, 0.6, 1], outputRange: [0.35, 0.12, 0] });
 
-  const initials = getInitials(customerName);
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
+  const urgent = secondsRemaining <= 10;
+
+  // These field names match what notifyWorkers() in simpleDispatch.ts sends
+  // (both the FCM `data` payload and the Socket.IO `job:incoming` emit use
+  // the same keys): customerName, location, ratePerDay, distanceText,
+  // jobId, requirementId, expiresAt. `rating`/`jobsCompleted` are not sent
+  // by the backend yet — only rendered if present.
+  const job = currentJob;
+  const initials = getInitials(job?.customerName);
+  const hasDistance = !!job?.distanceText;
+  const hasRate = !!job?.ratePerDay;
 
   return (
     <SafeAreaView style={styles.container}>
-      <Animated.View style={[styles.card, { transform: [{ translateY }] }]}>
-        {/* Alert badge */}
-        <View style={styles.badgeWrap}>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>🔔  New Job Alert</Text>
-          </View>
-        </View>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.backdrop, { opacity: backdropAnim }]}
+      />
 
-        {/* Customer row */}
-        <View style={styles.customerRow}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.customerName}>{customerName || 'Customer'}</Text>
-            {rating != null && (
-              <Text style={styles.ratingText}>
-                ⭐ {rating}
-                {jobsCompleted != null ? `  (${jobsCompleted}+ jobs)` : ''}
-              </Text>
-            )}
-            {!!location && <Text style={styles.locationText}>{location}</Text>}
-            {!!customerPhone && <Text style={styles.locationText}>{customerPhone}</Text>}
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        {/* Stat boxes */}
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>👜  DISTANCE</Text>
-            <Text style={styles.statValue}>{distanceText || '--'}</Text>
+      {job ? (
+        <Animated.View style={[styles.card, { transform: [{ translateY }] }]}>
+          {/* Countdown progress bar — the primary "time is running out" cue,
+              a thin bar instead of a wall of digits, that visibly races down
+              as secondsRemaining ticks. */}
+          <View style={styles.progressTrack}>
+            <Animated.View
+              style={[
+                styles.progressFill,
+                { width: progressWidth, backgroundColor: urgent ? colors.danger : colors.primary },
+              ]}
+            />
           </View>
 
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>💰  RATE</Text>
-            <Text style={styles.statValue}>
-              {ratePerDay ? `₹${ratePerDay}` : '--'}
+          <View style={styles.badgeWrap}>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>NEW JOB OFFER</Text>
+            </View>
+            <Text style={[styles.timerValue, urgent && styles.timerValueUrgent]}>
+              00:{String(secondsRemaining).padStart(2, '0')}
             </Text>
-            <Text style={styles.statSub}>per day</Text>
           </View>
+
+          <View style={styles.customerRow}>
+            <View style={styles.avatarWrap}>
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.ring,
+                  { opacity: ringOpacity, transform: [{ scale: ringScale }] },
+                ]}
+              />
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{initials}</Text>
+              </View>
+            </View>
+
+            <View style={{ flex: 1, marginLeft: spacing.md }}>
+              <Text style={styles.customerName} numberOfLines={1}>
+                {job.customerName || 'Customer'}
+              </Text>
+              {job.rating != null && (
+                <Text style={styles.metaText}>
+                  ⭐ {job.rating}
+                  {job.jobsCompleted != null ? `  ·  ${job.jobsCompleted}+ jobs` : ''}
+                </Text>
+              )}
+              {!!job.location && (
+                <Text style={styles.metaText} numberOfLines={1}>
+                  📍 {job.location}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>DISTANCE</Text>
+              {hasDistance ? (
+                <Text style={styles.statValue}>{job.distanceText}</Text>
+              ) : (
+                <View style={styles.statSkeleton} />
+              )}
+            </View>
+
+            <View style={styles.statDivider} />
+
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>DAILY RATE</Text>
+              {hasRate ? (
+                <Text style={styles.statValue}>₹{job.ratePerDay}</Text>
+              ) : (
+                <View style={styles.statSkeleton} />
+              )}
+            </View>
+          </View>
+
+          <View style={styles.actionsRow}>
+            <TouchableOpacity
+              style={styles.declineButton}
+              activeOpacity={0.75}
+              onPress={reject}
+            >
+              <Text style={styles.declineText}>Decline</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.acceptButton}
+              activeOpacity={0.85}
+              onPress={accept}
+            >
+              <Text style={styles.acceptText}>Accept Job</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      ) : (
+        // Zero-blank-frame guarantee: if this screen is ever on-screen for a
+        // moment before context state lands (should be sub-frame in
+        // practice), show the same dim backdrop with a lightweight ringing
+        // cue instead of nothing. There is never a raw white/empty frame.
+        <View style={styles.connectingWrap} pointerEvents="none">
+          <View style={styles.connectingDot} />
         </View>
-
-        {/* Countdown */}
-        <View style={styles.timerBox}>
-          <Text style={styles.timerLabel}>TIME TO ACCEPT</Text>
-          <Text style={styles.timerValue}>
-            ⏱ 00:{String(secondsRemaining).padStart(2, '0')}
-          </Text>
-        </View>
-
-        {/* Actions */}
-        <TouchableOpacity style={styles.acceptButton} onPress={accept}>
-          <Text style={styles.acceptText}>✓  Accept Job</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.declineButton} onPress={reject}>
-          <Text style={styles.declineText}>✕  Decline</Text>
-        </TouchableOpacity>
-      </Animated.View>
+      )}
     </SafeAreaView>
   );
 }
@@ -145,143 +231,187 @@ export default function IncomingJobScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(10,10,10,0.55)',
+  },
+  connectingWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: spacing.xxl * 2,
+  },
+  connectingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.surface,
+    opacity: 0.6,
+  },
   card: {
-    backgroundColor: COLORS.card,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 32,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.xl + 6,
+    borderTopRightRadius: radius.xl + 6,
+    paddingHorizontal: spacing.xl,
+    paddingTop: 0,
+    paddingBottom: spacing.xxl,
+    overflow: 'hidden',
+    ...shadow.nav,
+  },
+  progressTrack: {
+    height: 4,
+    backgroundColor: colors.border,
+    width: '100%',
+  },
+  progressFill: {
+    height: '100%',
   },
   badgeWrap: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    marginTop: -36,
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
   },
   badge: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: colors.primary,
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 11,
+    letterSpacing: 0.6,
+  },
+  timerValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.ink,
+    fontVariant: ['tabular-nums'],
+  },
+  timerValueUrgent: {
+    color: colors.danger,
   },
   customerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
+  },
+  avatarWrap: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ring: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
   },
   avatar: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: COLORS.primaryLight,
+    backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
   },
   avatarText: {
-    color: COLORS.primary,
+    color: colors.primary,
     fontWeight: '700',
-    fontSize: 18,
+    fontSize: 17,
   },
   customerName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
+    ...typography.h3,
+    color: colors.ink,
     marginBottom: 2,
   },
-  ratingText: {
-    fontSize: 13,
-    color: COLORS.subtext,
-    marginBottom: 2,
-  },
-  locationText: {
-    fontSize: 13,
-    color: COLORS.subtext,
+  metaText: {
+    ...typography.caption,
+    color: colors.inkMuted,
+    marginTop: 1,
   },
   divider: {
     height: 1,
-    backgroundColor: '#EEE',
-    marginBottom: 16,
+    backgroundColor: colors.border,
+    marginBottom: spacing.lg,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 14,
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.xl,
   },
   statBox: {
     flex: 1,
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: 16,
-    padding: 14,
+    alignItems: 'center',
+  },
+  statDivider: {
+    width: 1,
+    alignSelf: 'stretch',
+    backgroundColor: colors.border,
+    marginVertical: spacing.xs,
   },
   statLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.primary,
-    marginBottom: 6,
-    letterSpacing: 0.3,
+    ...typography.label,
+    color: colors.inkSoft,
+    marginBottom: spacing.xs,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '700',
-    color: COLORS.text,
+    color: colors.ink,
   },
-  statSub: {
-    fontSize: 11,
-    color: COLORS.subtext,
-    marginTop: 4,
+  statSkeleton: {
+    width: 48,
+    height: 16,
+    borderRadius: radius.sm,
+    backgroundColor: colors.border,
   },
-  timerBox: {
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: 16,
-    paddingVertical: 14,
+  actionsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  declineButton: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    paddingVertical: spacing.lg - 2,
     alignItems: 'center',
-    marginBottom: 20,
+    backgroundColor: colors.surface,
   },
-  timerLabel: {
-    fontSize: 11,
+  declineText: {
+    color: colors.inkMuted,
     fontWeight: '700',
-    color: COLORS.primary,
-    letterSpacing: 0.3,
-    marginBottom: 4,
-  },
-  timerValue: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.primary,
+    fontSize: 15,
   },
   acceptButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 30,
-    paddingVertical: 16,
+    flex: 2,
+    backgroundColor: colors.primary,
+    borderRadius: radius.pill,
+    paddingVertical: spacing.lg - 2,
     alignItems: 'center',
-    marginBottom: 12,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   acceptText: {
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 16,
-  },
-  declineButton: {
-    borderWidth: 1.5,
-    borderColor: '#D1D5DB',
-    borderRadius: 30,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  declineText: {
-    color: COLORS.subtext,
-    fontWeight: '700',
-    fontSize: 15,
   },
 });

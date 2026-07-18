@@ -84,9 +84,35 @@ object IncomingJobNotificationHelper {
         val acceptPendingIntent = actionPendingIntent(context, ACTION_ACCEPT, jobId)
         val rejectPendingIntent = actionPendingIntent(context, ACTION_REJECT, jobId)
 
+        // `body` carries the job's skill/description (e.g. "AC Repair"), sent
+        // by the backend but previously never actually shown anywhere in the
+        // notification — this makes it the headline when present, since
+        // "what is the job" matters as much as who/where/how-much.
+        val headline = body.ifBlank { "New Job Offer" }
+
+        val collapsedLine = buildString {
+            append(headline)
+            if (customerName.isNotBlank()) append(" • $customerName")
+            if (ratePerDay.isNotBlank()) append(" • ₹$ratePerDay/day")
+            if (location.isNotBlank()) append(" • $location")
+        }
+
+        val expandedDetail = buildString {
+            if (customerName.isNotBlank()) appendLine("👤  $customerName")
+            if (location.isNotBlank()) appendLine("📍  $location")
+            if (ratePerDay.isNotBlank()) appendLine("💰  ₹$ratePerDay per day")
+            append("⏱  Respond within 30 seconds")
+        }
+
+        val bigTextStyle = NotificationCompat.BigTextStyle()
+            .bigText(expandedDetail)
+            .setBigContentTitle(headline)
+            .setSummaryText(title)
+
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText("$customerName • ₹$ratePerDay/day • $location")
+            .setContentTitle(headline)
+            .setContentText(collapsedLine)
+            .setStyle(bigTextStyle)
             .setSmallIcon(context.applicationInfo.icon)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_CALL)

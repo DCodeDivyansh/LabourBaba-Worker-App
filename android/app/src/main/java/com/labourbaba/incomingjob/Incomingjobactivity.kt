@@ -47,8 +47,10 @@ class IncomingJobActivity : AppCompatActivity() {
             action = IncomingJobFirebaseService.TYPE_INCOMING_JOB
         }
         startActivity(forwardIntent)
+        overridePendingTransition(0, 0)
 
         finish()
+        overridePendingTransition(0, 0)
     }
 
     private fun showOverLockScreenAndWake() {
