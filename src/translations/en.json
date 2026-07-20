@@ -341,6 +341,38 @@
       "screenTitle": "Reviews Given",
       "title": "Your Feedback History",
       "description": "Here are the reviews you've left for workers. Your feedback helps maintain our high-quality community."
+    },
+    "privacy": {
+      "screenTitle": "Privacy Policy",
+      "lastUpdated": "Last Updated: July 2026",
+      "introTitle": "Your Privacy Matters",
+      "introDesc": "At LabourBaba, we value your trust. This Privacy Policy explains how we collect, use, and protect your information when you use the LabourBaba Worker application.",
+      "sections": {
+        "personalData": {
+          "title": "1. Information We Collect",
+          "content": "We collect information you provide directly to us when creating or updating your profile. This includes your name, mobile number, skills, trade experience, and profile photograph. We also collect verification documents to maintain community safety."
+        },
+        "location": {
+          "title": "2. Location Data & Background Tracking",
+          "content": "To assign you nearby jobs and show your ETA to customers, we collect precise location data. This application collects location data in the background (even when the app is closed or not in use) to enable automatic duty allocation and tracking of active transit. You can control location permissions in your device settings."
+        },
+        "notifications": {
+          "title": "3. Notification & Device Access",
+          "content": "We require notification permissions to alert you instantly about newly available jobs in your area. Additionally, we access phone calls and storage to enable contact with customers and upload profile pictures."
+        },
+        "usage": {
+          "title": "4. How We Use Your Information",
+          "content": "Your information is used to match you with job bookings, connect you with customers, facilitate payouts, support safety checks, and continuously improve the reliability of the LabourBaba platform."
+        },
+        "security": {
+          "title": "5. Data Security & Retention",
+          "content": "We implement industry-standard security measures to safeguard your personal data. We only retain your information for as long as your account is active or as required by regulatory obligations."
+        },
+        "contact": {
+          "title": "6. Contact Our Privacy Officer",
+          "content": "If you have questions about your privacy rights, data deletion, or how we manage your information, you can reach out directly to our support team through the Support section or email us at privacy@labourbaba.in."
+        }
+      }
     }
   }
 }
