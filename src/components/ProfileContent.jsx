@@ -96,7 +96,7 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
     React.useEffect(() => {
         const unsubscribe = onJobCompleted(() => {
             setCompletedCount((c) => c + 1);
-            setTotalCount((t) => t); // total unchanged, kept for clarity
+            setTotalCount((count) => count); // total unchanged, kept for clarity
         });
         return unsubscribe;
     }, []);
@@ -125,6 +125,7 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
 
     const MoveToHelpPage = () => navigation.navigate('Help');
     const MoveToLanguagePage = () => navigation.navigate('Language');
+    const MoveToPrivacyPolicy = () => navigation.navigate('PrivacyPolicy');
     // ⬅ FIXED: 'JobsHistory' isn't a registered route — the jobs list lives at
     // the 'Jobs' tab inside 'MainTabs' (see MainTabs.jsx).
     const MoveToJobHistory = () => navigation.navigate('MainTabs', { screen: 'Jobs' });
@@ -213,6 +214,7 @@ export default function ProfileContent({ name = 'Worker', imageUrl, phone }) {
                 <SettingItem
                     icon={<PrivacyPolicyIcon width={22} height={22} />}
                     title={t('profile.content.privacyPolicy')}
+                    onPress={MoveToPrivacyPolicy}
                     showDivider={false}
                 />
             </View>

@@ -7,6 +7,7 @@ import OtpVerificationScreen from '../screens/auth/OtpVerificationScreen';
 import CreateProfileScreen from '../screens/auth/CreateProfileScreen';
 import Help from '../screens/profile/Help'
 import LanguageSelectionScreen from '../screens/profile/LanguageSelectionScreen'
+import PrivacyPolicy from '../screens/profile/PrivacyPolicy';
 import JobDetailsScreen from '../screens/OtherPages/JobDetailsScreen';
 import JobCompletedScreen from '../screens/OtherPages/JobCompletedScreen';
 import IncomingJobScreen from '../screens/OtherPages/IncomingJobScreen';
@@ -59,6 +60,11 @@ export default function AppNavigator({
         <Stack.Screen
           name="Language"
           component={LanguageSelectionScreen}
+        />
+
+        <Stack.Screen
+          name="PrivacyPolicy"
+          component={PrivacyPolicy}
         />
         <Stack.Screen
           name="JobDetails"

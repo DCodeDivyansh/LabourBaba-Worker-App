@@ -165,9 +165,23 @@ const JobDetailsScreen = () => {
 
   const handleOtpSubmit = async (otp) => {
     if (verifyingOtp || !booking?.id) return;
+
+    // ⬅ NEW: client-side-only sanitization. SMS autofill on some Android
+    // keyboards can append a trailing space/newline, and some OTP input
+    // components can pass through non-digit characters if the user
+    // backspaces/edits mid-way. Stripping to digits-only and trimming here
+    // guarantees exactly what was generated is what gets sent — no backend
+    // changes needed since this happens entirely before the request goes out.
+    const sanitizedOtp = String(otp ?? '').replace(/\D/g, '').trim();
+
+    if (sanitizedOtp.length !== 6) {
+      Alert.alert('Invalid OTP', 'Please enter the full 6-digit code.');
+      return;
+    }
+
     setVerifyingOtp(true);
     try {
-      const response = await verifyOtp(booking.id, otp);
+      const response = await verifyOtp(booking.id, sanitizedOtp);
       if (response?.success === false) {
         throw new Error(response?.message || 'Invalid OTP');
       }
@@ -371,14 +385,6 @@ const JobDetailsScreen = () => {
         {/* ── Location card ───────────────────────────────────────────────── */}
         <View style={styles.locationCard}>
           {hasCoords ? (
-            // ⬅ CHANGED: real interactive MapView instead of a static PNG.
-            // Wrapped in a TouchableOpacity that opens full turn-by-turn
-            // navigation on tap — pan/zoom gestures are intentionally
-            // disabled since this map sits inside a vertical ScrollView,
-            // and letting it capture scroll/pinch gestures there causes a
-            // frustrating gesture fight with the page scroll. Tapping
-            // through to the Google/Apple Maps app is the standard pattern
-            // for an embedded map preview like this.
             <TouchableOpacity activeOpacity={0.9} onPress={handleNavigate}>
               <MapView
                 style={styles.map}
@@ -444,9 +450,6 @@ const JobDetailsScreen = () => {
 
       {/* ── Bottom Actions ───────────────────────────────────────────────── */}
       {!isCompleted && (
-        // ⬅ FIXED: paddingBottom now adds the device's real bottom safe-area
-        // inset on top of the base padding, instead of a fixed 16px that
-        // gets covered by the gesture bar / home indicator on many phones.
         <View style={[styles.bottomContainer, { paddingBottom: 16 + insets.bottom }]}>
           <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.85}>
             <Text style={styles.callText}>📞 {t('jobs.jobDetails.callCustomer', 'Call Customer')}</Text>
@@ -732,7 +735,6 @@ const styles = StyleSheet.create({
     height: 170,
   },
 
-  // ⬅ NEW: small overlay chip confirming the map preview is tappable
   mapTapHint: {
     position: 'absolute',
     bottom: 10,
@@ -833,9 +835,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // ⬅ FIXED: bottom safe-area handling is now applied inline where this
-  // style is used (paddingBottom: 16 + insets.bottom), since StyleSheet
-  // objects can't reference hook values directly.
   bottomContainer: {
     backgroundColor: colors.surface,
     paddingHorizontal: 16,
